@@ -135,7 +135,7 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
         u = linOp.A(V[:, k].to(dtype=linOp.dtype, device=linOp.device)).reshape(-1).to(dtype=dtype, device='cpu')
         u -= alpha * U[:, k]
         if reorth:
-            for jj in range(k - 1):
+            for jj in range(k):
                 u -= torch.dot(U[:, jj], u) * U[:, jj]
 
         beta = torch.norm(u)
