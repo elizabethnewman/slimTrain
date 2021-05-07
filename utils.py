@@ -20,10 +20,12 @@ def grad_norm(net: torch.nn.Module):
         if p.grad is None:
             continue
 
-        out += torch.sum(p.grad.data ** 2)
+        out += torch.sum(p.grad ** 2)
+
+    return torch.sqrt(out).item()
 
 
-def optimizer_params(optimizer):
+def optimizer_params(optimizer, spacing=15, precision=4):
     keys = list(optimizer.param_groups[0].keys())
     keys = tuple(keys[1:])
 
@@ -38,24 +40,24 @@ def optimizer_params(optimizer):
             names += len(param) * (name,)
             val += [*param]
             for p in param:
-                frmt += parameter_format(p)
+                frmt += parameter_format(p, spacing=spacing, precision=precision)
 
         else:
             names += (name,)
             val += [param]
-            frmt += parameter_format(param)
+            frmt += parameter_format(param, spacing=spacing, precision=precision)
 
     opt_params = {'str': names, 'frmt': frmt, 'val': val}
 
     return opt_params
 
 
-def parameter_format(param, spacing=15, decimal=4):
+def parameter_format(param, spacing=15, precision=4):
 
     if isinstance(param, int):
         frmt = '{:<' + str(spacing) + 'd}'
     else:
-        frmt = '{:<' + str(spacing) + '.' + str(decimal) + 'e}'
+        frmt = '{:<' + str(spacing) + '.' + str(precision) + 'e}'
 
     return frmt
 

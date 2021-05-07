@@ -47,9 +47,9 @@ results = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_te
                     num_epochs=20, batch_size=10)
 
 # save!
-filename = 'tmp'
-torch.save((net.state_dict(), results, net.LambdaHist, net.alphaHist), 'results/' + filename + '.pt')
-shutil.copy(sys.argv[0], 'results/' + filename + '.pt')
+# filename = 'tmp'
+# torch.save((net.state_dict(), results, net.LambdaHist, net.alphaHist), 'results/' + filename + '.pt')
+# shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 # plot results
 plt.figure(1)
