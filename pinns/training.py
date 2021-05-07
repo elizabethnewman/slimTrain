@@ -3,6 +3,7 @@ import torch
 import time
 from utils import optimizer_params, parameters_norm, grad_norm
 import math
+from pinns.poisson import PoissonPINNSlimTik
 
 
 def train_lbfgs(pinn, optimizer, data, max_iter, verbose=True):
@@ -24,8 +25,8 @@ def train_lbfgs(pinn, optimizer, data, max_iter, verbose=True):
     # initial evaluation
     loss = pinn.loss(*training_data)
     loss.backward()
-    p_norm0 = parameters_norm(pinn.net_u)
-    g_norm0 = grad_norm(pinn.net_u)
+    p_norm0 = parameters_norm(pinn.feature_extractor)
+    g_norm0 = grad_norm(pinn.feature_extractor)
 
     his = len(results['str']) * [0]
     his[0] = -1
@@ -56,8 +57,8 @@ def train_lbfgs(pinn, optimizer, data, max_iter, verbose=True):
         his = [iter, pinn.iter]
         his += opt_params['val']
 
-        p_norm = parameters_norm(pinn.net_u)
-        g_norm = grad_norm(pinn.net_u)
+        p_norm = parameters_norm(pinn.feature_extractor)
+        g_norm = grad_norm(pinn.feature_extractor)
         his += [end - start, p_norm, g_norm / g_norm0]
         his += net_params['val']
         his += [loss.item()]
@@ -90,9 +91,13 @@ def train_sgd(pinn, optimizer, scheduler, data, num_epochs=5, batch_size=10, log
     training_data = pinn.extract_data(data, requires_grad=True)
 
     # initial evaluation
-    loss = pinn.loss(*training_data)
+    if isinstance(pinn, PoissonPINNSlimTik):
+        loss = pinn.loss(*training_data, solve_W=False)
+    else:
+        loss = pinn.loss(*training_data)
+
+    p_norm0 = parameters_norm(pinn.feature_extractor)
     loss.backward()
-    p_norm0 = parameters_norm(pinn.net_u)
 
     his = len(results['str']) * [0]
     his[0:2] = [-1, pinn.iter]
@@ -110,7 +115,11 @@ def train_sgd(pinn, optimizer, scheduler, data, num_epochs=5, batch_size=10, log
         train_out = train_one_epoch(pinn, optimizer, data, batch_size=batch_size)
         end = time.time()
 
-        loss = pinn.loss(*training_data)
+        if isinstance(pinn, PoissonPINNSlimTik):
+            loss = pinn.loss(*training_data, solve_W=False)
+        else:
+            loss = pinn.loss(*training_data)
+
         loss.backward()
 
         opt_params = optimizer_params(optimizer)
@@ -119,7 +128,8 @@ def train_sgd(pinn, optimizer, scheduler, data, num_epochs=5, batch_size=10, log
         his = [epoch, pinn.iter]
         his += opt_params['val']
 
-        p_norm = parameters_norm(pinn.net_u)
+        p_norm = parameters_norm(pinn.feature_extractor)
+
         his += [end - start, p_norm]
         his += [*train_out]
         his += net_params['val']
@@ -140,7 +150,8 @@ def train_sgd(pinn, optimizer, scheduler, data, num_epochs=5, batch_size=10, log
 
 
 def train_one_epoch(pinn, optimizer, data, batch_size=10):
-    pinn.net_u.train()
+    pinn.feature_extractor.train()
+
     running_loss_u = 0
     running_loss_b = 0
     running_loss = 0

@@ -39,7 +39,7 @@ class SlimTikNetwork(nn.Module):
         x = x.transpose(0, 1)
         nex = x.shape[1]
         if self.bias:
-            x = torch.cat((x, torch.ones(1, x.shape[1])), dim=0)
+            x = torch.cat((x, torch.ones(1, x.shape[1], dtype=x.dtype)), dim=0)
 
         if c is not None:
             with torch.no_grad():
@@ -60,8 +60,11 @@ class SlimTikNetwork(nn.Module):
 
     def solve(self, Z, C, dtype=torch.float64):
         with torch.no_grad():
-            W, info = tiksolve.solve(Z, C, self.M, self.W, self.sumLambda, Lambda=self.Lambda,
-                                     dtype=dtype, opt_method=self.opt_method, reduction=self.reduction,
+            beta = 1.0
+            if self.reduction == 'mean':
+                beta = 1 / math.sqrt(Z.shape[1])
+            W, info = tiksolve.solve(beta * Z, beta * C, beta * self.M, self.W, self.sumLambda, Lambda=self.Lambda,
+                                     dtype=dtype, opt_method=self.opt_method,
                                      lower_bound=self.lower_bound, upper_bound=self.upper_bound)
 
         self.W = W
@@ -73,7 +76,7 @@ class SlimTikNetwork(nn.Module):
         results = {
             'str': ('|W|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
             'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
-            'val': (torch.norm(self.W).item(), self.Lambda, self.alpha, self.iter, self.memory_depth)
+            'val': [torch.norm(self.W).item(), self.Lambda, self.alpha, self.iter, self.memory_depth]
         }
 
         return results

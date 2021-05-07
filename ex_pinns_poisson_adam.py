@@ -31,11 +31,11 @@ pinn = PoissonPINN(feature_extractor)
 # optimization
 opt = torch.optim.Adam(feature_extractor.parameters(), lr=1e-2)
 scheduler = torch.optim.lr_scheduler.StepLR(opt, 500, gamma=0.5)
-results = train_sgd(pinn, opt, scheduler, data, num_epochs=2000, batch_size=100, log_interval=50)
+results = train_sgd(pinn, opt, scheduler, data, num_epochs=100, batch_size=100, log_interval=10)
 
 # save!
 # filename = 'tmp'
-# torch.save((pinn.net_u.state_dict(), results), 'results/' + filename + '.pt')
+# torch.save((pinn.feature_extractor.state_dict(), results), 'results/' + filename + '.pt')
 # shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 # plotting

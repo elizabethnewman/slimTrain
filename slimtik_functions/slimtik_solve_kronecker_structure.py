@@ -4,7 +4,7 @@ from slimtik_functions.tikhonov_parameters import sgcv
 
 
 def solve(Z, C, M, W, sumLambda,
-          dtype=torch.float64, opt_method=None, reduction='mean',
+          dtype=torch.float64, opt_method=None,
           lower_bound=1e-7, upper_bound=1e-3, Lambda=1.0):
     """
     Solve ||S[M, Z,
@@ -13,14 +13,10 @@ def solve(Z, C, M, W, sumLambda,
     """
 
     orig_dtype = Z.dtype
-    beta = 1.0
-    if reduction == 'mean':
-        beta = 1 / math.sqrt(Z.shape[1])
+    U, S, _ = torch.svd(M.to(dtype))
 
-    U, S, _ = torch.svd(beta * M.to(dtype))
-
-    Z = beta * Z.to(dtype)
-    C = beta * C.to(dtype)
+    Z = Z.to(dtype)
+    C = C.to(dtype)
     W = W.to(dtype)
     WZC = W @ Z - C
 
