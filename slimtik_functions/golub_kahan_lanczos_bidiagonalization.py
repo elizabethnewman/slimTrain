@@ -69,32 +69,39 @@ def lanczos_bidiagonalization(linOp, b, max_dim):
 
 
 # https://github.com/jnagy1/IRtools/blob/master/IRcodes/IRhybrid_lsqr.m
-def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True, tik=True, dtype=torch.float64,
-                    verbose=False, decomp_out=False):
-    # TODO: make sure to cast data correctly # TODO: make sure to cast data correctly
+def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True, tik=True, decomp_out=False,
+                    dtype=torch.float64, verbose=False):
+
     if isinstance(linOp, torch.Tensor) and linOp.ndim == 2:
         linOp = DenseMatrix(linOp)
 
+    device_orig = b.device
+    dtype_orig = b.dtype
+    if dtype is None:
+        dtype = b.dtype
     # ---------------------------------------------------------------------------------------------------------------- #
-    # setup
+    # recast
+    # TODO: casting data type and device - should we cast the linear operator to a new dtype and device as well?
+
+    # tolerance
     eps = torch.finfo(dtype).eps
 
     # initialize
-    b = b.reshape(-1)
-    d = linOp.AT(b).reshape(-1)
+    b = b.reshape(-1).to(dtype=dtype, device='cpu')
+    d = linOp.AT(b.to(dtype=linOp.dtype, device=linOp.device)).reshape(-1).to(dtype=dtype, device='cpu')
     n = d.numel()
     m = b.numel()
 
-    x0 = torch.zeros(n).to(b.dtype)
+    x0 = torch.zeros(n, dtype=dtype, device='cpu')
     x = x0
     r = b
     beta = torch.norm(r)
     nrmb = torch.norm(b)
 
-    U = torch.zeros(m, max_iter + 1)
-    B = torch.zeros(max_iter + 1, max_iter)
-    V = torch.zeros(n, max_iter)
-    rhs = torch.zeros(max_iter + 1)
+    U = torch.zeros(m, max_iter + 1, dtype=dtype, device='cpu')
+    B = torch.zeros(max_iter + 1, max_iter, dtype=dtype, device='cpu')
+    V = torch.zeros(n, max_iter, dtype=dtype, device='cpu')
+    rhs = torch.zeros(max_iter + 1, dtype=dtype, device='cpu')
 
     # information to store
     info = {'Xnrm': [], 'Rnrm': [], 'Enrm': [], 'RegParamVect': [], 'StopFlag': None, 'X': None,
@@ -113,19 +120,19 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
 
     k = 0
     while k < max_iter:
-        w = linOp.AT(U[:, k]).reshape(-1)
+        w = linOp.AT(U[:, k].to(dtype=linOp.dtype, device=linOp.device)).reshape(-1).to(dtype=dtype, device='cpu')
 
         if k > 0:
             w -= beta * V[:, k - 1]
 
         if reorth:
             for jj in range(k - 1):
-                w - torch.dot(V[:, jj], w) * V[:, jj]
+                w -= torch.dot(V[:, jj], w) * V[:, jj]
 
         alpha = torch.norm(w)
         V[:, k] = w / alpha
 
-        u = linOp.A(V[:, k]).reshape(-1)
+        u = linOp.A(V[:, k].to(dtype=linOp.dtype, device=linOp.device)).reshape(-1).to(dtype=dtype, device='cpu')
         u -= alpha * U[:, k]
         if reorth:
             for jj in range(k - 1):
@@ -175,7 +182,7 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
                 alpha = torch.logspace(log10(eps), 3, 100)
                 trial_points = gcv_trial_points(alpha, Uk[0, :], Sk, nrmb)
                 RegParamk = torch.min(trial_points)
-                info['RegParamVect'] += [RegParamk]
+                info['RegParamVect'] += [RegParamk.item()]
         else:
             # no regularization
             RegParamk = 0
@@ -186,15 +193,15 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
         rhskhat = Sk * rhskhat[:k + 1]
         y_hat = rhskhat[:k + 1] / Dk
         y = Vk @ y_hat
-        info['Rnrm'] = torch.norm(rhsk - Bk @ y) / nrmb
+        info['Rnrm'] += [(torch.norm(rhsk - Bk @ y) / nrmb).item()]
 
         # update
         d = V[:, :k + 1] @ y
         x = x0 + d
-        info['Xnrm'] += [torch.norm(x)]
+        info['Xnrm'] += [(torch.norm(x)).item()]
 
         if x_true is not None:
-            info['Enrm'] += [torch.norm(x.reshape(-1) - x_true.reshape(-1)) / nrmtrue]
+            info['Enrm'] += [(torch.norm(x.reshape(-1) - x_true.reshape(-1)) / nrmtrue).item()]
 
         # update iterate
         k += 1
@@ -203,12 +210,14 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
         info['StopFlag'] = 'reached maximum number of iterations'
 
     if decomp_out:
-        info['U'] = U[:, :k + 2]
-        info['B'] = B[:k + 2, :k + 1]
-        info['V'] = V[:, :k + 1]
+        info['U'] = U[:, :k + 2].to(dtype_orig)
+        info['B'] = B[:k + 2, :k + 1].to(dtype_orig)
+        info['V'] = V[:, :k + 1].to(dtype_orig)
+
+    # recast
+    x = x.to(dtype=dtype_orig, device=device_orig)
 
     return x, info
-
 
 
 def gcv_trial_points(alpha, u, s, beta):

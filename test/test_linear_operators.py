@@ -34,7 +34,7 @@ def test_operator(linOp):
     print('err_A = %0.2e\terr_AT = %0.2e' % (err_mean[0].item(), err_mean[1].item()))
 
     if isinstance(linOp, DenseMatrix) or isinstance(linOp, AffineOperator):
-        print('err_M = %0.2e' % (torch.norm(M - A_mat) / torch.norm(M)).item())
+        print('err_M = %0.2e' % (torch.norm(linOp.alpha * M - A_mat) / torch.norm(M)).item())
 
 
 # ==================================================================================================================== #
