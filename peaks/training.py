@@ -13,9 +13,9 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
         net_params = net.print_outs()
 
     results = {
-        'str': ('epoch',) + opt_params['str'] + ('|params|', 'time') + net_params['str']
+        'str': ('epoch',) + opt_params['str'] + ( 'time', '|params|') + net_params['str']
                + ('running_loss', 'running_acc', 'loss', 'acc', 'loss', 'acc'),
-        'frmt': '{:<15d}' + opt_params['frmt'] + '{:<15.4e}{:<15.2f}' + net_params['frmt']
+        'frmt': '{:<15d}' + opt_params['frmt'] + '{:<15.2f}{:<15.4e}' + net_params['frmt']
                 + '{:<15.4e}{:<15.2f}{:<15.4e}{:<15.2f}{:<15.4e}{:<15.2f}',
         'val': None}
     results['val'] = torch.empty(0, len(results['str']))
@@ -34,7 +34,9 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
     test_eval = eval(net, criterion, y_test, c_test, batch_size=batch_size)
 
     his = len(results['str']) * [0]
+    his[0] = -1
     his[-4:] = [*train_eval, *test_eval]
+    his[results['str'].index('|params|')] = parameters_norm(net)
     results['val'] = torch.cat((results['val'], torch.tensor(his).reshape(1, -1)), dim=0)
 
     if verbose:
@@ -42,7 +44,7 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
 
     total_start = time.time()
 
-    for epoch in range(1, num_epochs + 1):
+    for epoch in range(num_epochs):
         start = time.time()
         train_out = train_one_epoch(net, criterion, optimizer, y_train, c_train, batch_size=batch_size)
         end = time.time()
@@ -60,7 +62,7 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
         # store results
         his = [epoch]
         his += opt_params['val']
-        his += [param_nrm, end - start]
+        his += [end - start, param_nrm]
         his += net_params['val']
         his +=[*train_out]
         his += [*train_eval, *test_eval]

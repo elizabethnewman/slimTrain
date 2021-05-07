@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from networks.resnet import ResidualNetwork
 from pinns.data import poisson2D
 from pinns.poisson import PoissonPINN
-from pinns.training import train_lbfgs
+from pinns.training import train_sgd
 
 # for saving
 import shutil
@@ -29,8 +29,9 @@ feature_extractor = ResidualNetwork(in_features=d, width=10, depth=10, final_tim
 pinn = PoissonPINN(feature_extractor)
 
 # optimization
-opt = torch.optim.LBFGS(feature_extractor.parameters(), line_search_fn='strong_wolfe', max_iter=50)
-results = train_lbfgs(pinn, opt, data, 10)
+opt = torch.optim.Adam(feature_extractor.parameters(), lr=1e-2)
+scheduler = torch.optim.lr_scheduler.StepLR(opt, 500, gamma=0.5)
+results = train_sgd(pinn, opt, scheduler, data, num_epochs=2000, batch_size=100, log_interval=50)
 
 # save!
 # filename = 'tmp'
