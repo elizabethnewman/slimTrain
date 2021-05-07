@@ -1,5 +1,32 @@
 ### Resources
 
+[Iterative Sampled Methods for Massive and Separable Nonlinear Inverse Problems](https://par.nsf.gov/servlets/purl/10108292)
+```latex
+@inproceedings{ChungChungSlagel2019,
+  title={Iterative sampled methods for massive and separable nonlinear inverse problems},
+  author={Chung, Julianne and Chung, Matthias and Slagel, J Tanner},
+  booktitle={International Conference on Scale Space and Variational Methods in Computer Vision},
+  pages={119--130},
+  year={2019},
+  organization={Springer}
+}
+```
+
+[Sampled Tikhonov Regularization for Large Linear Inverse Problems](https://arxiv.org/abs/1812.06165)
+```latex
+@article{SlagelEtAl2019,
+  title={Sampled Tikhonov regularization for large linear inverse problems},
+  author={Slagel, J Tanner and Chung, Julianne and Chung, Matthias and Kozak, David and Tenorio, Luis},
+  journal={Inverse Problems},
+  volume={35},
+  number={11},
+  pages={114008},
+  year={2019},
+  publisher={IOP Publishing}
+}
+```
+
+
 [LSQR: An Algorithm for Sparse Linear Equations and Sparse Least Squares](https://web.stanford.edu/group/SOL/software/lsqr/lsqr-toms82a.pdf)
 ```latex
 @article{PaigeSaunders1982,
@@ -41,6 +68,7 @@
 
 
 [IR Tools: a MATLAB package of iterative regularization methods and large-scale test problems](https://arxiv.org/abs/1712.05602)
+
 [IRTools Github Repository](https://github.com/jnagy1/IRtools)
 ```latex
 @article{GazzolaHansenNagy2019,
@@ -62,5 +90,7 @@
 	Bdsk-Url-1 = {https://doi.org/10.1007/s11075-018-0570-7}
 }
 ```
+
+
 
 
