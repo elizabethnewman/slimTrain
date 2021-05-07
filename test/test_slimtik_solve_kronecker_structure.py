@@ -47,10 +47,10 @@ wk = vec(W)
 bk = vec(B[:, -n_calTk:])
 Ak = A[-n_calTk * n_target:, :]
 
-AI = torch.cat((beta * A, math.sqrt(sumLambda) * Iw), dim=0)
+AI = torch.cat((beta * A, math.sqrt(sumLambda + Lambda) * Iw), dim=0)
 z = torch.zeros(A.shape[0] - n_calTk * n_target)
 res = Ak @ wk - bk
-bI = torch.cat((z, beta * res, Lambda / math.sqrt(sumLambda) * wk))
+bI = torch.cat((z, beta * res, Lambda / math.sqrt(sumLambda + Lambda) * wk))
 sk = torch.pinverse(AI) @ bI
 w_true = wk - sk
 res_true = Ak @ w_true - bk
@@ -67,7 +67,7 @@ print('|vec(Ck) - bk| = %0.4e' % (torch.norm(vec(Ck) - bk) / torch.norm(bk)).ite
 print('|vec(Rk) - res| = %0.4e' % (torch.norm(vec(Rk) - res) / torch.norm(res)).item())
 
 W_new, info = solve(Zk, Ck, M, W, sumLambda,
-              dtype=torch.float64, opt_method=None, reduction=reduction,
+              dtype=torch.float64, opt_method='none', reduction=reduction,
               lower_bound=1e-7, upper_bound=1e-3, Lambda=Lambda)
 
 # compare residuals

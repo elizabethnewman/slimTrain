@@ -27,8 +27,8 @@ feature_extractor = ResidualNetwork(in_features=y_train.shape[1], target_feature
                                     width=8, depth=8, final_time=4, closing_layer=False)
 W = torch.randn(c_train.shape[1], 8 + 1)
 
-net = SlimTikNetwork(feature_extractor, W, bias=True, memory_depth=5, lower_bound=1e-7, upper_bound=1e3,
-                     opt_method='trial_points', reduction='mean', sumLambda=0.05)
+net = SlimTikNetwork(feature_extractor, W, bias=True, memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                     opt_method='none', reduction='mean', sumLambda=0.05)
 
 pytorch_total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
 print('trainable parameters = ', pytorch_total_params)
@@ -40,11 +40,11 @@ criterion = nn.MSELoss(reduction='mean')
 optimizer = optim.Adam(net.parameters(), lr=1e-3, weight_decay=1e-4)
 
 # learning rate scheduler
-scheduler = StepLR(optimizer, step_size=25, gamma=0.5)
+scheduler = StepLR(optimizer, step_size=25, gamma=1)
 
 # train!
 results = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_test,
-                    num_epochs=50, batch_size=10)
+                    num_epochs=20, batch_size=10)
 
 # save!
 filename = 'tmp'
