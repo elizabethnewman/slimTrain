@@ -57,35 +57,37 @@ class LinearOperator:
 
 
 class ConcatenatedLinearOperator:
-    def __init__(self, linOpTuple):
+    def __init__(self, linOpList, alpha=1.0):
         """
         Concatenated vertically by default for now
-        :param linOpTuple:
-        :type linOpTuple:
+        :param linOpList:
+        :type linOpList:
         """
         super(ConcatenatedLinearOperator, self).__init__()
-        self.linOpTuple = linOpTuple
-        self.shape_in = linOpTuple[0].shape_in
+        self.linOpList = linOpList
+        self.shape_in = linOpList[0].shape_in
+        self.alpha = alpha
 
         # must avoid identity case
         self.dtype = None
         self.device = None
-        for linOp in self.linOpTuple:
+        for linOp in self.linOpList:
             if linOp.data is not None:
                 self.dtype = linOp.dtype
                 self.device = linOp.device
                 self.ndim = 1 + linOp.ndim
                 break
 
-        for i, _ in enumerate(self.linOpTuple):
-            self.linOpTuple[i].dtype = self.dtype
-            self.linOpTuple[i].device = self.device
+        for i, _ in enumerate(self.linOpList):
+            self.linOpList[i].alpha = self.alpha
+            self.linOpList[i].dtype = self.dtype
+            self.linOpList[i].device = self.device
 
     def A(self, x):
         # x is a vector that goes into every operator
 
         b = torch.empty(0)
-        for linOp in self.linOpTuple:
+        for linOp in self.linOpList:
             b = torch.cat((b, linOp.A(x).view(-1)), dim=0)
 
         return b
@@ -96,24 +98,24 @@ class ConcatenatedLinearOperator:
         x = torch.zeros(self.numel_in())
 
         count = 0
-        for linOp in self.linOpTuple:
+        for linOp in self.linOpList:
             n = linOp.numel_out()
             x += linOp.AT(b[count:count + n])
             count += n
         return x
 
     def numel_in(self):
-        return self.linOpTuple[0].numel_in()
+        return self.linOpList[0].numel_in()
 
     def numel_out(self):
         n = 0
-        for linOp in self.linOpTuple:
+        for linOp in self.linOpList:
             n += linOp.numel_out()
         return n
 
     def to_(self, d):
-        for i, _ in enumerate(self.linOpTuple):
-            self.linOpTuple[i].to_(d)
+        for i, _ in enumerate(self.linOpList):
+            self.linOpList[i].to_(d)
 
         if isinstance(d, torch.dtype):
             self.dtype = d

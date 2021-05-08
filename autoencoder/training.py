@@ -1,7 +1,7 @@
 import torch
 import time
 from utils import optimizer_params, parameters_norm
-from networks.slimtik import SlimTikNetwork
+from networks.slimtik import SlimTikNetworkLinearOperator
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
@@ -9,7 +9,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
 
     opt_params = optimizer_params(optimizer)
     net_params = {'str': (), 'frmt': '', 'val': []}
-    if isinstance(net, SlimTikNetwork):
+    if isinstance(net, SlimTikNetworkLinearOperator):
         net_params = net.print_outs()
 
     results = {
@@ -50,7 +50,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         param_nrm = parameters_norm(net)
         opt_params = optimizer_params(optimizer)
         net_params = {'str': (), 'frmt': '', 'val': []}
-        if isinstance(net, SlimTikNetwork):
+        if isinstance(net, SlimTikNetworkLinearOperator):
             net_params = net.print_outs()
 
         # store results
@@ -84,7 +84,10 @@ def train_one_epoch(model, criterion, optimizer, train_loader, device='cpu'):
         num_samples += inputs.shape[0]
 
         optimizer.zero_grad()
-        output = model(inputs)
+        if isinstance(model, SlimTikNetworkLinearOperator):
+            output = model(inputs, inputs)
+        else:
+            output = model(inputs)
 
         loss = criterion(output, inputs)
         running_loss += loss.item()

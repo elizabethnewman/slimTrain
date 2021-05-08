@@ -1,12 +1,12 @@
 from slimtik_functions.linear_operators import *
 from slimtik_functions import golub_kahan_lanczos_bidiagonalization as gkl
-
+import matplotlib.pyplot as plt
 
 torch.set_default_dtype(torch.float64)
 torch.manual_seed(20)
 
 
-def test_hybrid_lsqr(linOp, b, max_iter, x_true):
+def test_hybrid_lsqr(linOp, b, max_iter, x_true, verbose=True):
 
     x, info = gkl.hybrid_lsqr_gcv(linOp, b, max_iter, x_true=x_true, RegParam='gcv',
                                   tik=True, verbose=True, dtype=torch.float64)
@@ -24,23 +24,34 @@ def test_hybrid_lsqr(linOp, b, max_iter, x_true):
         n = linOp.numel_in()
 
     eps = torch.finfo(x.dtype).eps
-    assert torch.abs(err - info['Enrm'][-1]) < 2 * eps, 'error norms do not match'
-    assert torch.abs(res - info['Rnrm'][-1]) < 2 * eps, 'residuals do not match'
+    if torch.abs(err - info['Enrm'][-1]) > 2 * eps:
+        print('err diff = 0.4%d' % torch.abs(err - info['Enrm'][-1]).item())
+    if torch.abs(res - info['Rnrm'][-1]) < 2 * eps:
+        print('res diff = 0.4%d' % torch.abs(res - info['Rnrm'][-1]).item())
 
-    for k in range(max_iter):
-        print('(m, n, k)=(%d, %d, %d)\tres = %0.2e\terr = %0.2e' %
-              (m, n, k + 1, info['Rnrm'][k], info['Enrm'][k]))
+    if verbose:
+        for k in range(max_iter):
+            print('(m, n, k)=(%d, %d, %d)\tres = %0.2e\terr = %0.2e' %
+                  (m, n, k + 1, info['Rnrm'][k], info['Enrm'][k]))
 
     return info
 
 # ==================================================================================================================== #
-# print('Dense')
-# m = 100
-# n = 50
-#
+print('Dense')
+m = 1000
+n = 500
+
 # A = torch.randn(m, n)
-#
-# linOp = DenseMatrix(A)
+
+# ill-posed A
+u, _ = torch.qr(torch.randn(m, m))
+v, _ = torch.qr(torch.randn(n, n))
+
+r = min(m, n)
+s = torch.logspace(3, -3, r)
+A = u[:, :r] @ torch.diag(s) @ v[:, :r].t()
+
+linOp = DenseMatrix(A)
 
 # ==================================================================================================================== #
 # print('Affine')
@@ -130,34 +141,50 @@ def test_hybrid_lsqr(linOp, b, max_iter, x_true):
 # linOp = ConcatenatedLinearOperator((linOp2, linOp1, linOp3))
 
 # ==================================================================================================================== #
-print('Concatenated Linear Operator - Version 2')
-
-N, C_in, H, W = 7, 5, 20, 16
-C_out = 4
-kH, kW = 3, 3
-
-bias = True
-stride = (3, 1)
-padding = 3
-dilation = 2
-groups = 1  # not yet implemented
-
-# initialize
-M = torch.randn(N, C_in, H, W)
-
-linOp1 = Convolution2D(M, C_in, C_out, (kH, kW),
-                       bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
-
-m = 2
-n = linOp1.numel_in()
-M = torch.randn(m, n)
-linOp2 = DenseMatrix(M)
-linOp3 = IdentityMatrix(n, alpha=1)
-
-linOp = ConcatenatedLinearOperator((linOp1, linOp2, linOp3))
+# print('Concatenated Linear Operator - Version 2')
+#
+# N, C_in, H, W = 7, 5, 20, 16
+# C_out = 4
+# kH, kW = 3, 3
+#
+# bias = True
+# stride = (3, 1)
+# padding = 3
+# dilation = 2
+# groups = 1  # not yet implemented
+#
+# # initialize
+# M = torch.randn(N, C_in, H, W)
+#
+# linOp1 = Convolution2D(M, C_in, C_out, (kH, kW),
+#                        bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
+#
+# m = 2
+# n = linOp1.numel_in()
+# M = torch.randn(m, n)
+# linOp2 = DenseMatrix(M)
+# linOp3 = IdentityMatrix(n, alpha=1)
+#
+# linOp = ConcatenatedLinearOperator((linOp1, linOp2, linOp3))
 
 # ==================================================================================================================== #
 x_true = torch.randn(linOp.numel_in())
 b = linOp.A(x_true)
+noise = 1e-2 * torch.norm(x_true) * torch.randn_like(b)
 
-info = test_hybrid_lsqr(linOp, b, min(50, x_true.numel()), x_true)
+info = test_hybrid_lsqr(linOp, b + noise, min(1000, x_true.numel()), x_true, verbose=False)
+
+# plot
+plt.figure(1)
+plt.semilogy(info['Rnrm'])
+plt.xlabel('iter')
+plt.ylabel('rel. res.')
+plt.title('residual')
+plt.show()
+
+plt.figure(2)
+plt.semilogy(info['Enrm'])
+plt.xlabel('iter')
+plt.ylabel('rel. err.')
+plt.title('error')
+plt.show()

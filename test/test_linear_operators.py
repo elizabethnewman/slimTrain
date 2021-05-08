@@ -166,6 +166,7 @@ stride = (3, 1)
 padding = 3
 dilation = 2
 groups = 1  # not yet implemented
+alpha = 2
 
 # initialize
 M = torch.randn(N, C_in, H, W)
@@ -180,6 +181,6 @@ M = torch.randn(m, n)
 linOp2 = DenseMatrix(M)
 linOp3 = IdentityMatrix(n, alpha=1)
 
-linOp = ConcatenatedLinearOperator((linOp1, linOp2, linOp3))
+linOp = ConcatenatedLinearOperator((linOp1, linOp2, linOp3), alpha=2)
 
 test_operator(linOp)

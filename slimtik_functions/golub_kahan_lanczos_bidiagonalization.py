@@ -68,7 +68,6 @@ def lanczos_bidiagonalization(linOp, b, max_dim):
     return U, B2, V
 
 
-# https://github.com/jnagy1/IRtools/blob/master/IRcodes/IRhybrid_lsqr.m
 def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True, tik=True, decomp_out=False,
                     dtype=torch.float64, verbose=False):
 
@@ -106,9 +105,11 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
     # information to store
     info = {'Xnrm': [], 'Rnrm': [], 'Enrm': [], 'RegParamVect': [], 'StopFlag': None, 'X': None,
             'B': None, 'V': None, 'U': None}
+    info['Rnrm'] += [1.0]
 
     if x_true is not None:
         nrmtrue = torch.norm(x_true)
+        info['Enrm'] += [1.0]
         # BestEnrm = 1e10
         # BestReg = {'RegP': None, 'It': None, 'Enrm': None, 'Xnrm': [], 'Rnrm': []}
 
@@ -135,7 +136,7 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
         u = linOp.A(V[:, k].to(dtype=linOp.dtype, device=linOp.device)).reshape(-1).to(dtype=dtype, device='cpu')
         u -= alpha * U[:, k]
         if reorth:
-            for jj in range(k):
+            for jj in range(k):  # differs from IRTools
                 u -= torch.dot(U[:, jj], u) * U[:, jj]
 
         beta = torch.norm(u)
@@ -176,16 +177,16 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
         if tik:
             if isinstance(RegParam, float):
                 RegParamk = RegParam
-                info['RegParamVect'] += [RegParamk]
             else:
                 # use sgcv
                 alpha = torch.logspace(log10(eps), 3, 100)
                 trial_points = gcv_trial_points(alpha, Uk[0, :], Sk, nrmb)
-                RegParamk = torch.min(trial_points)
-                info['RegParamVect'] += [RegParamk.item()]
+                RegParamk = torch.min(trial_points).item()
         else:
             # no regularization
             RegParamk = 0
+
+        info['RegParamVect'] += [RegParamk]
 
 
         # solve!

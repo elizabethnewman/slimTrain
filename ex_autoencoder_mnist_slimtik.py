@@ -4,8 +4,10 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import math
+from networks.slimtik import SlimTikNetworkLinearOperator
+from slimtik_functions.linear_operators import ConvolutionTranspose2D
 from autoencoder.data import mnist
-from autoencoder.mnist import MNISTAutoencoder
+from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
 from autoencoder.training import train_sgd, evaluate
 
 
@@ -29,20 +31,29 @@ if use_cuda:
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5)
 
 # build network
-net = MNISTAutoencoder()
+feature_extractor = MNISTAutoencoderFeatureExtractor()
+
+# placeholder for linear operator (empty tensor will be replaced during iterations
+linOp = ConvolutionTranspose2D(torch.empty(0, 16, 14, 14), in_channels=16, out_channels=1,
+                           kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+W = torch.randn(linOp.numel_in())
+
+net = SlimTikNetworkLinearOperator(feature_extractor, linOp, W=W, bias=linOp.bias,
+                                   memory_depth=3, lower_bound=1e-7, upper_bound=1e3,
+                                   opt_method=None, reduction='sum', sumLambda=0.05)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')
 
 # optimizer
-optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': 1e-4},
-                        {'params': net.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-3)
+optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-4},
+                        {'params': net.feature_extractor.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-3)
 
 # learning rate scheduler
-scheduler = StepLR(optimizer, step_size=25, gamma=0.5)
+scheduler = StepLR(optimizer, step_size=25, gamma=1)
 
 # train!
-results = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=10)
+results = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=50)
 test_results = evaluate(net, criterion, test_loader, device=device)
 
 # save!
@@ -80,8 +91,8 @@ plt.show()
 
 
 plt.figure(3)
-plt.semilogy(results['val'][:, results['str'].index('loss')].numpy())
-plt.semilogy(results['val'][:, results['str'].index('loss') + 2].numpy())
+plt.semilogy(results['val'][:, results['str'].index('train_loss')].numpy())
+plt.semilogy(results['val'][:, results['str'].index('val_loss')].numpy())
 plt.legend(('training', 'validation'))
 plt.xlabel('epochs')
 plt.title("convergence")

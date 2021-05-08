@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import math
 import slimtik_functions.slimtik_solve_kronecker_structure as tiksolve
+import slimtik_functions.golub_kahan_lanczos_bidiagonalization as gkl
+import slimtik_functions.linear_operators as lop
 
 
 class SlimTikNetwork(nn.Module):
@@ -77,6 +79,95 @@ class SlimTikNetwork(nn.Module):
             'str': ('|W|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
             'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
             'val': [torch.norm(self.W).item(), self.Lambda, self.alpha, self.iter, self.memory_depth]
+        }
+
+        return results
+
+
+class SlimTikNetworkLinearOperator(nn.Module):
+
+    def __init__(self, feature_extractor, linOp, W, bias=True,
+                 memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05):
+        super(SlimTikNetworkLinearOperator, self).__init__()
+
+        self.feature_extractor = feature_extractor
+        self.linOp = linOp
+        self.W = W
+        self.bias = bias
+
+        self.memory_depth = memory_depth
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.opt_method = opt_method
+        self.reduction = reduction
+        self.sumLambda = sumLambda
+
+        self.M = []
+
+        self.max_iter = 5  # for lsqr
+
+        self.Lambda = self.sumLambda
+        self.LambdaHist = []
+
+        self.alpha = 0
+        self.alphaHist = []
+
+        self.iter = 0
+
+    def forward(self, x, c=None):
+        x = self.feature_extractor(x)
+        self.linOp.data = x
+
+        if c is not None:
+            with torch.no_grad():
+                if self.iter > self.memory_depth:
+                    self.M = self.M[1:]  # remove oldest
+
+                # form new linear operator and add to history
+                self.M.append(self.linOp)
+
+                # solve!
+                self.solve(x, c)
+                self.iter += 1
+                self.alpha = self.sumLambda / (self.iter + 1)
+                self.alphaHist.append(self.alpha)
+
+        return self.linOp.A(self.W)
+
+    def solve(self, Z, c, dtype=torch.float64):
+        with torch.no_grad():
+            beta = 1.0
+            if self.reduction == 'mean':
+                beta = 1 / math.sqrt(Z.shape[1])
+
+            # create linear operator
+            I = lop.IdentityMatrix(self.W.numel(), alpha=self.sumLambda / beta)
+            A = lop.ConcatenatedLinearOperator(self.M + [I])
+            A.alpha = beta
+
+            # create right-hand side
+            self.linOp.data = Z
+            res = self.linOp.A(self.W).reshape(-1, 1) - c.reshape(-1, 1)
+            alpha = self.Lambda / self.sumLambda
+            b = torch.cat((res.view(-1), alpha * self.W.view(-1)))
+            b = torch.cat((torch.zeros(A.numel_out() - b.numel()), b))
+
+            # only for fixed regularization currently
+            s, info = gkl.hybrid_lsqr_gcv(A, b, self.max_iter, tik=True, RegParam=self.Lambda)
+
+            # get new regularization parameters TODO: is this correct?
+            self.Lambda = info['RegParamVect'][-1]
+            self.LambdaHist.append(self.Lambda)
+            self.sumLambda += self.Lambda
+
+            self.W -= s.reshape(self.W.shape)
+
+    def print_outs(self):
+        results = {
+            'str': ('|W|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
+            'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
+            'val': [torch.norm(self.W.data).item(), self.Lambda, self.alpha, self.iter, self.memory_depth]
         }
 
         return results

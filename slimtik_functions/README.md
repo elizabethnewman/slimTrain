@@ -17,6 +17,6 @@
 (Gazzola, Hansen, and Nagy, 2019)
 
 [IR Tools Github Repository](https://github.com/jnagy1/IRtools)
-(Gazzola, Hansen, and Nagy)
+(Gazzola, Hansen, and Nagy, 2018)
 
 
