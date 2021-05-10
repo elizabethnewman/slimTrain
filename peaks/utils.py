@@ -18,8 +18,8 @@ def set_default_arguments_adam():
 
 def set_filename_adam(args):
     filename = 'peaks_adam'
-    details = "--width-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e" % \
-              (args.width, args.depth, args.lr, args.weight_decay)
+    details = "--width-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e" \
+              % (args.width, args.depth, args.lr, args.weight_decay)
     return filename, details
 
 
@@ -30,7 +30,9 @@ def set_default_arguments_slimtik():
 
 
 def set_filename_slimtik(args):
-    _, details = set_filename_adam(args)
     filename = 'peaks_slimtik'
+
+    _, details = set_filename_adam(args)
+    details += "--memdepth-%0.2d--optmethod-%s" % (args.mem_depth, args.opt_method)
     return filename, details
 

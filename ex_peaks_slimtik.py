@@ -7,7 +7,7 @@ import numpy as np
 from networks.resnet import ResidualNetwork
 from networks.slimtik import SlimTikNetwork
 from peaks.data import get_regression_data, visualize_regression_image
-from peaks.training import train_sgd
+from peaks.training import train_sgd, evaluate
 import pickle
 from peaks.utils import set_default_arguments_slimtik, set_filename_slimtik
 
@@ -27,6 +27,7 @@ torch.manual_seed(args.seed)
 
 # load data
 y_train, c_train = get_regression_data(args.num_train)
+y_val, c_val = get_regression_data(args.num_val)
 y_test, c_test = get_regression_data(args.num_test)
 
 # create network
@@ -53,15 +54,22 @@ optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_de
 scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
 # train!
-results = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_test,
-                    num_epochs=args.max_epochs, batch_size=args.batch_size)
+results, total_time = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_val, c_val,
+                                num_epochs=args.max_epochs, batch_size=args.batch_size)
+
+# overall loss after training
+train_loss, _ = evaluate(net, criterion, y_train, c_train)
+val_loss, _ = evaluate(net, criterion, y_val, c_val)
+test_loss, _ = evaluate(net, criterion, y_test, c_test)
+print('final loss - train: %0.4e\tval: %0.4e\ttest: %0.4e' % (train_loss, val_loss, test_loss))
 
 # save!
 if args.save:
     with torch.no_grad():
         filename, details = set_filename_slimtik(args)
         stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler, 'criterion': criterion,
-                          'results': results, 'seed': args.seed, 'args': args}
+                          'results': results, 'seed': args.seed, 'args': args, 'total_time': total_time,
+                          'final_loss': {'train': train_loss, 'val': val_loss, 'test': test_loss}}
         pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
         shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
 

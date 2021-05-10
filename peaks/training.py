@@ -30,8 +30,8 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
         print(('{:<15s}' * len(results['str'])).format(*results['str']))
 
     # initial evaluation
-    train_eval = eval(net, criterion, y_train, c_train, batch_size=batch_size)
-    test_eval = eval(net, criterion, y_test, c_test, batch_size=batch_size)
+    train_eval = evaluate(net, criterion, y_train, c_train, batch_size=batch_size)
+    test_eval = evaluate(net, criterion, y_test, c_test, batch_size=batch_size)
 
     his = len(results['str']) * [0]
     his[0] = -1
@@ -49,8 +49,8 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
         train_out = train_one_epoch(net, criterion, optimizer, y_train, c_train, batch_size=batch_size)
         end = time.time()
 
-        train_eval = eval(net, criterion, y_train, c_train, batch_size=batch_size)
-        test_eval = eval(net, criterion, y_test, c_test, batch_size=batch_size)
+        train_eval = evaluate(net, criterion, y_train, c_train, batch_size=batch_size)
+        test_eval = evaluate(net, criterion, y_test, c_test, batch_size=batch_size)
 
         # norm of network weights
         param_nrm = parameters_norm(net)
@@ -77,7 +77,7 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results
+    return results, total_end
 
 
 def train_one_epoch(model, criterion, optimizer, train_data, train_labels, batch_size=10):
@@ -118,7 +118,7 @@ def train_one_epoch(model, criterion, optimizer, train_data, train_labels, batch
     return running_loss / num_samples, 100 * correct / num_samples
 
 
-def eval(model, criterion, test_data, test_labels, batch_size=10):
+def evaluate(model, criterion, test_data, test_labels, batch_size=10):
     model.eval()
     test_loss = 0
     correct = 0
