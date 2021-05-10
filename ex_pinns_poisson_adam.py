@@ -9,6 +9,7 @@ from pinns.training import train_sgd
 import shutil
 import datetime
 import sys
+import pickle
 
 # for reproducibility
 torch.manual_seed(20)
@@ -31,14 +32,9 @@ pinn = PoissonPINN(feature_extractor)
 # optimization
 opt = torch.optim.Adam(feature_extractor.parameters(), lr=1e-2)
 scheduler = torch.optim.lr_scheduler.StepLR(opt, 500, gamma=0.5)
-results = train_sgd(pinn, opt, scheduler, data, num_epochs=100, batch_size=100, log_interval=10)
+results, total_time = train_sgd(pinn, opt, scheduler, data, num_epochs=20, batch_size=100, log_interval=10)
 
-# save!
-# filename = 'tmp'
-# torch.save((pinn.feature_extractor.state_dict(), results), 'results/' + filename + '.pt')
-# shutil.copy(sys.argv[0], 'results/' + filename + '.py')
-
-# plotting
+# final results
 u_true = data['interior_true']
 x, y, xb, yb, f, g = pinn.extract_data(data, requires_grad=True)
 
@@ -46,9 +42,20 @@ u = pinn.net_u(torch.cat((x, y), dim=1))
 f_pred = pinn.net_f(x, y)
 ub = pinn.net_u(torch.cat((xb, yb), dim=1))
 
-print('u: ', torch.norm(u.view(-1) - u_true.view(-1)) / torch.norm(u_true))
-print('lapu: ', torch.norm(f.view(-1) - f_pred.view(-1)) / torch.norm(f))
-print('boundary: ', torch.norm(ub.view(-1) - g.view(-1)))
+loss_u = (torch.norm(u.view(-1) - u_true.view(-1)) / torch.norm(u_true)).item()
+loss_lapu = (torch.norm(f.view(-1) - f_pred.view(-1)) / torch.norm(f)).item()
+loss_b = (torch.norm(ub.view(-1) - g.view(-1))).item()
+print('u: %0.4e' % loss_u)
+print('lapu: %0.4e' % loss_lapu)
+print('boundary: %0.4e' % loss_b)
+
+# save!
+filename = 'pinns_poisson_adam'
+stored_results = {'network': pinn, 'optimizer': opt, 'scheduler': scheduler,
+                  'results': results, 'total_time': total_time,
+                  'final_loss': {'loss_u': loss_u, 'loss_lapu': loss_lapu, 'loss_b': loss_b}}
+pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
+shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 # plot PDE
 plt.figure(1)
