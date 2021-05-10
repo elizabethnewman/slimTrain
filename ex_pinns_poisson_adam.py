@@ -30,7 +30,7 @@ feature_extractor = ResidualNetwork(in_features=d, width=10, depth=10, final_tim
 pinn = PoissonPINN(feature_extractor)
 
 # optimization
-opt = torch.optim.Adam(feature_extractor.parameters(), lr=1e-2)
+opt = torch.optim.Adam(feature_extractor.parameters(), lr=1e-2, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.StepLR(opt, 500, gamma=0.5)
 results, total_time = train_sgd(pinn, opt, scheduler, data, num_epochs=20, batch_size=100, log_interval=10)
 
