@@ -9,7 +9,7 @@ def set_default_arguments_adam():
                         width=8, depth=8, final_time=4, no_closing_layer=False,
                         num_train=2000, num_test=500,
                         reduction='mean',
-                        max_epochs=50, batch_size=10, lr=1e-3, weight_decay=1e-4,
+                        num_epochs=50, batch_size=10, lr=1e-3, weight_decay=1e-4,
                         step_size=25, gamma=0.5,
                         dirname='results/')
 

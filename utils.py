@@ -43,7 +43,7 @@ def argument_parser():
                         help='type of reduction in loss function (default: "mean")')
 
     # optimization options
-    parser.add_argument('--max-epochs', type=int, default=5, metavar='max_epochs',
+    parser.add_argument('--num-epochs', type=int, default=5, metavar='num_epochs',
                         help='maximum of epochs to train (default: 5)')
     parser.add_argument('--batch-size', type=int, default=10, metavar='batch_size',
                         help='input batch size for training (default: 10)')
