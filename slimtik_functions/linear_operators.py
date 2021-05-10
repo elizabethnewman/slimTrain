@@ -1,10 +1,9 @@
 import torch
 import torch.nn.functional as F
-from math import prod, floor
+from math import floor
 
 # for convolutions: https://arxiv.org/pdf/1603.07285.pdf
 
-# TODO: add option to scale a linear operator
 class LinearOperator:
 
     def __init__(self, data, alpha=1.0):
@@ -378,3 +377,10 @@ class ConvolutionTranspose2D(LinearOperator):
     def num_out_features(self):
         return prod(self.shape_out)
 
+
+# product of list or tuple entries - available in math package for python3.9
+def prod(a):
+    n = 1
+    for ai in a:
+        n *= ai
+    return n

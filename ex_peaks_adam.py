@@ -6,43 +6,56 @@ import matplotlib.pyplot as plt
 from networks.resnet import ResidualNetwork
 from peaks.data import get_regression_data, visualize_regression_image
 from peaks.training import train_sgd
+import pickle
+from utils import argument_parser
+from peaks.utils import set_default_arguments_adam, set_filename_adam
 
 # for saving
 import shutil
 import datetime
 import sys
 
+parser = set_default_arguments_adam()
+args = parser.parse_args()
+
+print(args)
+
 # set seed for reproducibility
-torch.manual_seed(20)
+torch.manual_seed(args.seed)
 
 # load data
-y_train, c_train = get_regression_data(2000)
-y_test, c_test = get_regression_data(500)
+y_train, c_train = get_regression_data(args.num_train)
+y_test, c_test = get_regression_data(args.num_test)
 
 # create network
 net = ResidualNetwork(in_features=y_train.shape[1], target_features=c_train.shape[1],
-                      width=8, depth=8, final_time=4, closing_layer=True)
+                      width=args.width, depth=args.depth, final_time=args.final_time,
+                      closing_layer=(not args.no_closing_layer))
 
 pytorch_total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
 print('trainable parameters = ', pytorch_total_params)
 
 # loss function
-criterion = nn.MSELoss(reduction='mean')
+criterion = nn.MSELoss(reduction=args.reduction)
 
 # optimizer
-optimizer = optim.Adam(net.parameters(), lr=1e-3, weight_decay=1e-4)
+optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
 # learning rate scheduler
-scheduler = StepLR(optimizer, step_size=25, gamma=0.5)
+scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
 # train!
 results = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_test,
-                    num_epochs=50, batch_size=10)
+                    num_epochs=args.max_epochs, batch_size=args.batch_size)
 
 # save!
-# filename = 'tmp'
-# torch.save((net.state_dict(), results), 'results/' + filename + '.pt')
-# shutil.copy(sys.argv[0], 'results/' + filename + '.pt')
+if args.save:
+    with torch.no_grad():
+        filename, details = set_filename_adam(args)
+        stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler, 'criterion': criterion,
+                          'results': results, 'seed': args.seed, 'args': args}
+        pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
+        shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
 
 # plot results
 plt.figure(1)

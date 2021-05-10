@@ -1,4 +1,80 @@
 import torch
+import argparse
+
+
+def argument_parser():
+    # training settings
+    parser = argparse.ArgumentParser(description='pytorch-slimtik')
+
+    # resnet options
+    parser.add_argument('--width', type=int, default=4, metavar='width',
+                        help='width of network (default: 4)')
+    parser.add_argument('--depth', type=int, default=4, metavar='depth',
+                        help='depth of network (default: 4)')
+    parser.add_argument('--final-time', type=float, default=1, metavar='final_time',
+                        help='final time corresponding to network depth (default: 1)')
+    parser.add_argument('--no-closing-layer', action='store_true', default=False,
+                        help='final linear layer as part of resnet')
+
+    # data options
+    parser.add_argument('--num-train', type=int, default=1000, metavar='num_train',
+                        help='number of training samples (default: 1000)')
+    parser.add_argument('--num-val', type=int, default=100, metavar='num_val',
+                        help='number of validation samples (default: 100)')
+    parser.add_argument('--num-test', type=int, default=100, metavar='num_test',
+                        help='number of testing samples (default: 100)')
+
+    # loss options
+    parser.add_argument('--reduction', type=str, default='mean', metavar='reduction',
+                        help='type of reduction in loss function (default: "mean")')
+
+    # optimization options
+    parser.add_argument('--max-epochs', type=int, default=5, metavar='max_epochs',
+                        help='maximum of epochs to train (default: 5)')
+    parser.add_argument('--batch-size', type=int, default=10, metavar='batch_size',
+                        help='input batch size for training (default: 10)')
+    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='test_batch_size',
+                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--lr', type=float, default=1e-3, metavar='lr',
+                        help='learning rate (default: 0.001)')
+    parser.add_argument('--weight-decay', type=float, default=1e-2, metavar='weight_decay',
+                        help='regularization on network weights (default: 0.01)')
+    parser.add_argument('--betas', type=int, default=(0.9, 0.99), metavar='betas', nargs='+',
+                        help='Adam betas (default: (0.9, 0.99))')
+    parser.add_argument('--max-iter', type=int, default=10, metavar='max_iter',
+                        help='maximum number of internal L-BFGS iterations (default: 10)')
+    parser.add_argument('--line-search', type=str, default='strong_wolfe', metavar='line_search',
+                        help='line search method for L-BFGS iterations (default: "strong_wolfe")')
+
+    # scheduler
+    parser.add_argument('--gamma', type=float, default=1, metavar='gamma',
+                        help='scheduler learning rate reduction gamma (default: 1)')
+    parser.add_argument('--step-size', type=int, default=1, metavar='step_size',
+                        help='scheduler learning rate reduction step size (default: 1)')
+
+    # reproducibility options
+    parser.add_argument('--seed', type=int, default=1, metavar='seed',
+                        help='random seed (default: 1)')
+
+    # saving options (printouts in terminal will not display
+    parser.add_argument('--save', action='store_true', default=False,
+                        help='save the current model')
+    parser.add_argument('--filename', type=str, default='tmp',
+                        help='file name to save model')
+    parser.add_argument('--dirname', type=str, default='results/',
+                        help='file name to save model - including "/"')
+
+    # gpu
+    parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='use tensor network')
+
+    # printing options
+    parser.add_argument('--no-verbose', action='store_true', default=False,
+                        help='turn off verbosity')
+    parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+                        help='how many batches to wait before logging training status')
+
+    return parser
 
 
 def parameters_norm(net):
