@@ -18,10 +18,10 @@ class MNISTAutoencoder(nn.Module):
         super(MNISTAutoencoder,self).__init__()
 
         enc1 = nn.Conv2d(in_channels=1, out_channels=width,
-                              kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
         enc2 = nn.Conv2d(in_channels=width, out_channels=2 * width,
-                              kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         act2 = nn.ReLU()
         encr = View((-1, 7 * 7 * 2 * width,))
@@ -53,10 +53,10 @@ class MNISTAutoencoderFeatureExtractor(nn.Module):
         super(MNISTAutoencoderFeatureExtractor,self).__init__()
 
         enc1 = nn.Conv2d(in_channels=1, out_channels=width,
-                              kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
         enc2 = nn.Conv2d(in_channels=width, out_channels=2 * width,
-                              kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         act2 = nn.ReLU()
         encr = View((-1, 7 * 7 * 2 * width,))

@@ -10,11 +10,18 @@ from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
 from autoencoder.training import train_sgd, evaluate
 
+# for saving
+import shutil
+import datetime
+import sys
+import pickle
 
+
+# for reproducibility
+torch.manual_seed(20)
 
 # setup
 use_cuda = torch.cuda.is_available()
-torch.manual_seed(20)
 device = torch.device("cuda" if use_cuda else "cpu")
 
 train_kwargs = {'batch_size': 32}
@@ -35,12 +42,19 @@ feature_extractor = MNISTAutoencoderFeatureExtractor()
 
 # placeholder for linear operator (empty tensor will be replaced during iterations
 linOp = ConvolutionTranspose2D(torch.empty(0, 16, 14, 14), in_channels=16, out_channels=1,
-                           kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
-W = torch.randn(linOp.numel_in())
+                               kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+
+# W = torch.randn(linOp.numel_in())
+# initialize with pytorch
+dec2 = nn.ConvTranspose2d(in_channels=16, out_channels=1,
+                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+W = dec2.weight.data.reshape(-1)
+b = dec2.bias.data.reshape(-1)
+W = torch.cat((W, b))
 
 net = SlimTikNetworkLinearOperator(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                   memory_depth=3, lower_bound=1e-7, upper_bound=1e3,
-                                   opt_method=None, reduction='sum', sumLambda=0.05)
+                                   memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                                   opt_method=None, reduction='sum', sumLambda=5e-2)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')
@@ -50,16 +64,25 @@ optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weig
                         {'params': net.feature_extractor.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-3)
 
 # learning rate scheduler
-scheduler = StepLR(optimizer, step_size=25, gamma=1)
+scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
 # train!
-results = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=50)
-test_results = evaluate(net, criterion, test_loader, device=device)
+results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
+                                num_epochs=10, log_interval=1)
+
+# final evaluation of network
+train_loss = evaluate(net, criterion, train_loader, device=device)
+val_loss = evaluate(net, criterion, val_loader, device=device)
+test_loss = evaluate(net, criterion, test_loader, device=device)
 
 # save!
-# filename = 'tmp'
-# torch.save((net.state_dict(), results), 'results/' + filename + '.pt')
-# shutil.copy(sys.argv[0], 'results/' + filename + '.pt')
+filename = 'autoencoder_mnist_slimtik'
+stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler,
+                  'results': results, 'total_time': total_time,
+                  'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
+pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
+shutil.copy(sys.argv[0], 'results/' + filename + '.py')
+
 
 # plot results
 

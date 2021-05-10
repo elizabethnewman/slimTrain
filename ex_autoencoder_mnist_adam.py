@@ -8,11 +8,18 @@ from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoder
 from autoencoder.training import train_sgd, evaluate
 
+# for saving
+import shutil
+import datetime
+import sys
+import pickle
 
+
+# for reproducibility
+torch.manual_seed(20)
 
 # setup
 use_cuda = torch.cuda.is_available()
-torch.manual_seed(20)
 device = torch.device("cuda" if use_cuda else "cpu")
 
 train_kwargs = {'batch_size': 32}
@@ -42,13 +49,21 @@ optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': 1e-4},
 scheduler = StepLR(optimizer, step_size=25, gamma=1)
 
 # train!
-results = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=50)
-test_results = evaluate(net, criterion, test_loader, device=device)
+results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
+                                num_epochs=10, log_interval=1)
+
+# final evaluation of network
+train_loss = evaluate(net, criterion, train_loader, device=device)
+val_loss = evaluate(net, criterion, val_loader, device=device)
+test_loss = evaluate(net, criterion, test_loader, device=device)
 
 # save!
-# filename = 'tmp'
-# torch.save((net.state_dict(), results), 'results/' + filename + '.pt')
-# shutil.copy(sys.argv[0], 'results/' + filename + '.pt')
+filename = 'autoencoder_mnist_adam'
+stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler,
+                  'results': results, 'total_time': total_time,
+                  'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
+pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
+shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 # plot results
 

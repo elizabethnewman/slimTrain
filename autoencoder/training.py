@@ -5,7 +5,7 @@ from networks.slimtik import SlimTikNetworkLinearOperator
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
-              num_epochs=5, device='cpu', verbose=True):
+              num_epochs=5, device='cpu', verbose=True, log_interval=1):
 
     opt_params = optimizer_params(optimizer)
     net_params = {'str': (), 'frmt': '', 'val': []}
@@ -62,7 +62,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         his += [train_eval, test_eval]
         results['val'] = torch.cat((results['val'], torch.tensor(his).reshape(1, -1)), dim=0)
 
-        if verbose:
+        if verbose and not epoch % log_interval:
             print(results['frmt'].format(*his))
 
         # update learning rate
@@ -71,7 +71,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results
+    return results, total_end
 
 
 def train_one_epoch(model, criterion, optimizer, train_loader, device='cpu'):

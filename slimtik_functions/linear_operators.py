@@ -289,7 +289,7 @@ class Convolution2D(LinearOperator):
 class ConvolutionTranspose2D(LinearOperator):
 
     def __init__(self, data, in_channels, out_channels, kernel_size,
-                 bias=False, stride=1, padding=0, output_padding=0, dilation=1, groups=1, alpha=0.1):
+                 bias=False, stride=1, padding=0, output_padding=0, dilation=1, groups=1, alpha=1.0):
         super(ConvolutionTranspose2D, self).__init__(data=data, alpha=alpha)
 
         if isinstance(kernel_size, int):
