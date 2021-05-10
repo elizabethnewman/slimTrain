@@ -71,7 +71,7 @@ def train_lbfgs(pinn, optimizer, data, max_iter, verbose=True):
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results
+    return results, total_end
 
 
 def train_sgd(pinn, optimizer, scheduler, data, num_epochs=5, batch_size=10, log_interval=50, verbose=True):

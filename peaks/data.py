@@ -32,7 +32,7 @@ def get_regression_data(n, domain=(-3, 3)):
     return y, c
 
 
-def visualize_regression_image(net, fig_num=1):
+def visualize_regression_image(net):
     grid_x, grid_y = get_grid2D()
 
     grid_data = torch.cat((grid_x.reshape(-1, 1), grid_y.reshape(-1, 1)), dim=1)
@@ -47,7 +47,6 @@ def visualize_regression_image(net, fig_num=1):
           np.linalg.norm(c_pred.reshape(-1) - c_true.reshape(-1)) / np.linalg.norm(c_true.reshape(-1)))
 
     # image plots
-    plt.figure(fig_num)
     fig, axs = plt.subplots(2, 2)
     ax = axs[0, 0]
     p = ax.imshow(c_true.reshape(grid_x.shape))
