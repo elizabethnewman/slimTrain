@@ -17,7 +17,6 @@ import sys
 
 parser = set_default_arguments_adam()
 args = parser.parse_args()
-
 print(args)
 
 # set seed for reproducibility

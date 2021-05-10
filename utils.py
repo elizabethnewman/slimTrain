@@ -16,6 +16,20 @@ def argument_parser():
     parser.add_argument('--no-closing-layer', action='store_true', default=False,
                         help='final linear layer as part of resnet')
 
+    # slimtik options
+    parser.add_argument('--mem-depth', type=int, default=0, metavar='mem_depth',
+                        help='slimtik memory depth (default: 0)')
+    parser.add_argument('--lower-bound', type=float, default=1e-7, metavar='lower_bound',
+                        help='slimtik lower bound (default: 1e-7)')
+    parser.add_argument('--upper-bound', type=float, default=1e3, metavar='upper_bound',
+                        help='slimtik upper bound (default: 1e3)')
+    parser.add_argument('--opt-method', type=str, default='none', metavar='opt_method',
+                        help='slimtik optimization method, either "none" or "trial_points" (default: "none")')
+    parser.add_argument('--sum-lambda', type=float, default=0.05, metavar='sum_lambda',
+                        help='slimtik sum of lambda initialization (default: 0.05)')
+    parser.add_argument('--no-bias', action='store_true', default=False,
+                        help='slimtik no bias option (default: False)')
+
     # data options
     parser.add_argument('--num-train', type=int, default=1000, metavar='num_train',
                         help='number of training samples (default: 1000)')
@@ -68,7 +82,9 @@ def argument_parser():
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='use tensor network')
 
-    # printing options
+    # printing/plotting options
+    parser.add_argument('--plot', action='store_true', default=False,
+                        help='show plots')
     parser.add_argument('--no-verbose', action='store_true', default=False,
                         help='turn off verbosity')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
