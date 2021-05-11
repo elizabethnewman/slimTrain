@@ -85,7 +85,7 @@ class ConcatenatedLinearOperator:
     def A(self, x):
         # x is a vector that goes into every operator
 
-        b = torch.empty(0)
+        b = torch.empty(0, device=x.device)
         for linOp in self.linOpList:
             b = torch.cat((b, linOp.A(x).view(-1)), dim=0)
 
@@ -94,14 +94,14 @@ class ConcatenatedLinearOperator:
     def AT(self, b):
         # b is an output vector
         # we apply AT to each block and sum
-        x = torch.zeros(self.numel_in())
+        x = torch.zeros(self.numel_in(), device=b.device, dtype=b.dtype)
 
         count = 0
         for linOp in self.linOpList:
             n = linOp.numel_out()
             x += linOp.AT(b[count:count + n])
             count += n
-        return x
+        return x.to(b.device)
 
     def numel_in(self):
         return self.linOpList[0].numel_in()
@@ -153,12 +153,12 @@ class DenseMatrix(LinearOperator):
 
     def A(self, x):
         x_device = x.device
-        x = x.to(self.device)
+        x = x.to(self.data.device)
         return (self.alpha * self.data @ x).to(x_device)
 
     def AT(self, x):
         x_device = x.device
-        x = x.to(self.device)
+        x = x.to(self.data.device)
         return (self.alpha * self.data.t() @ x).to(x_device)
 
     def numel_in(self):
@@ -183,7 +183,7 @@ class AffineOperator(LinearOperator):
     def A(self, x):
         # TODO: add scalar multiply?  Should we multiply bias?
         x_device = x.device
-        x = x.to(self.device)
+        x = x.to(self.data.device)
         n = self.shape_in[0]
 
         y = self.data @ x[:n]
@@ -194,7 +194,7 @@ class AffineOperator(LinearOperator):
 
     def AT(self, x):
         x_device = x.device
-        x = x.to(self.device)
+        x = x.to(self.data.device)
         y = self.data.t() @ x
 
         if self.bias:
@@ -249,7 +249,7 @@ class Convolution2D(LinearOperator):
     def A(self, x):
         x_device = x.device
         n = prod(self.shape_in)
-        x = x.reshape(-1).to(self.device)
+        x = x.reshape(-1).to(self.data.device)
 
         b = None
         if self.bias:
@@ -263,7 +263,7 @@ class Convolution2D(LinearOperator):
 
     def AT(self, x):
         x_device = x.device
-        x = x.reshape(-1, *self.shape_out).to(self.device)
+        x = x.reshape(-1, *self.shape_out).to(self.data.device)
 
         z = F.conv2d(self.alpha * self.data.permute(1, 0, 2, 3), x.permute(1, 0, 2, 3), bias=None,
                      stride=(self.dilation[0], self.dilation[1]),
@@ -337,7 +337,7 @@ class ConvolutionTranspose2D(LinearOperator):
     def A(self, x):
         x_device = x.device
         n = prod(self.shape_in)
-        x = x.reshape(-1).to(self.device)
+        x = x.reshape(-1).to(self.data.device)
 
         b = None
         if self.bias:
@@ -355,7 +355,7 @@ class ConvolutionTranspose2D(LinearOperator):
 
     def AT(self, x):
         x_device = x.device
-        x = x.reshape(-1, *self.shape_out).to(self.device)
+        x = x.reshape(-1, *self.shape_out).to(self.data.device)
 
         z = F.conv2d(x.permute(1, 0, 2, 3), self.alpha * self.data.permute(1, 0, 2, 3), bias=None,
                      stride=self.dilation,
