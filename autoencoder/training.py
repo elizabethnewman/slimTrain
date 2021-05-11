@@ -89,7 +89,7 @@ def train_one_epoch(model, criterion, optimizer, train_loader, device='cpu'):
         else:
             output = model(inputs)
 
-        loss = criterion(output, inputs)
+        loss = criterion(output, inputs.to(output.device))
         running_loss += loss.item()
 
         # average over the batch; assume criterion does not have reduction='mean'
@@ -111,7 +111,7 @@ def evaluate(model, criterion, data_loader, device='cpu'):
             num_samples += inputs.shape[0]
             output = model(inputs)
 
-            test_loss += criterion(output, inputs)
+            test_loss += criterion(output, inputs.to(output.device))
 
     return test_loss / num_samples
 
