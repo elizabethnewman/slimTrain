@@ -77,7 +77,7 @@ test_loss = evaluate(net, criterion, test_loader, device=device)
 
 # save!
 filename = 'autoencoder_mnist_slimtik'
-stored_results = {'network': net.to('cpu'), 'optimizer': optimizer, 'scheduler': scheduler,
+stored_results = {'network': net.to('cpu'), 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
