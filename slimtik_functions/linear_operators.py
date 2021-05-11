@@ -240,9 +240,9 @@ class Convolution2D(LinearOperator):
         self.shape_out = (out_channels, H_out, W_out)
 
     def A(self, x):
-
+        x_device = x.device
         n = prod(self.shape_in)
-        x = x.reshape(-1)
+        x = x.reshape(-1).to(self.device)
 
         b = None
         if self.bias:
@@ -252,10 +252,11 @@ class Convolution2D(LinearOperator):
         z = F.conv2d(self.alpha * self.data, x.reshape(self.shape_in), bias=b, stride=self.stride,
                      padding=self.padding, dilation=self.dilation, groups=self.groups)
 
-        return z
+        return z.to(x_device)
 
     def AT(self, x):
-        x = x.reshape(-1, *self.shape_out)
+        x_device = x.device
+        x = x.reshape(-1, *self.shape_out).to(self.device)
 
         z = F.conv2d(self.alpha * self.data.permute(1, 0, 2, 3), x.permute(1, 0, 2, 3), bias=None,
                      stride=(self.dilation[0], self.dilation[1]),
@@ -270,7 +271,7 @@ class Convolution2D(LinearOperator):
         if self.bias:
             z = torch.cat((z, torch.sum(x, dim=(0, 2, 3)).reshape(-1)))
 
-        return z
+        return z.to(x_device)
 
     def numel_in(self):
         b = 0
@@ -327,8 +328,9 @@ class ConvolutionTranspose2D(LinearOperator):
         self.shape_out = (out_channels, H_out, W_out)
 
     def A(self, x):
+        x_device = x.device()
         n = prod(self.shape_in)
-        x = x.reshape(-1)
+        x = x.reshape(-1).to(self.device)
 
         b = None
         if self.bias:
@@ -342,11 +344,11 @@ class ConvolutionTranspose2D(LinearOperator):
                                dilation=self.dilation,
                                groups=self.groups)
 
-        return z
+        return z.to(x_device)
 
     def AT(self, x):
-
-        x = x.reshape(-1, *self.shape_out)
+        x_device = x.device
+        x = x.reshape(-1, *self.shape_out).to(self.device)
 
         z = F.conv2d(x.permute(1, 0, 2, 3), self.alpha * self.data.permute(1, 0, 2, 3), bias=None,
                      stride=self.dilation,
@@ -362,7 +364,7 @@ class ConvolutionTranspose2D(LinearOperator):
         if self.bias:
             z = torch.cat((z, torch.sum(x, dim=(0, 2, 3)).reshape(-1)))
 
-        return z
+        return z.to(x_device)
 
     def numel_in(self):
         b = 0
