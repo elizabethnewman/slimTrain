@@ -188,7 +188,6 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
 
         info['RegParamVect'] += [RegParamk]
 
-
         # solve!
         Dk = Sk ** 2 + RegParamk ** 2
         rhskhat = Sk * rhskhat[:k + 1]

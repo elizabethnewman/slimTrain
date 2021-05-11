@@ -130,3 +130,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /results/
+/display_saved_results_pinns.py
+/slimtik_functions/lsqr_slimtik.md
