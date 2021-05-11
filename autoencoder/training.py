@@ -111,7 +111,7 @@ def evaluate(model, criterion, data_loader, device='cpu'):
             num_samples += inputs.shape[0]
             output = model(inputs)
 
-            test_loss += criterion(output, inputs.to(output.device))
+            test_loss += criterion(output, inputs.to(output.device)).item()
 
     return test_loss / num_samples
 

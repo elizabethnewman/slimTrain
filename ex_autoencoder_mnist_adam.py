@@ -69,7 +69,8 @@ shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 with torch.no_grad():
     inputs, labels = next(iter(test_loader))
-    outputs = net(inputs)
+    outputs = net(inputs).to('cpu')
+    inputs = inputs.to('cpu')
 
 
 plt.figure(1)

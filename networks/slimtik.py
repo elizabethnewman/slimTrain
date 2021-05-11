@@ -163,6 +163,12 @@ class SlimTikNetworkLinearOperator(nn.Module):
 
             self.W -= s.reshape(self.W.shape)
 
+    def to_(self, device='cpu'):
+        self.feature_extractor = self.feature_extractor.to(device)
+        self.W = self.W.to(device)
+        self.linOp.to_(device)
+
+
     def print_outs(self):
         results = {
             'str': ('|W|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
