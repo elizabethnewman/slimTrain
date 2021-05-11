@@ -29,7 +29,7 @@ val_kwargs = {'batch_size': 32}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,
-                   'shuffle': True}
+                   'shuffle': False}
     train_kwargs.update(cuda_kwargs)
     val_kwargs.update(cuda_kwargs)
 
@@ -38,7 +38,7 @@ if use_cuda:
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5)
 
 # build network
-feature_extractor = MNISTAutoencoderFeatureExtractor()
+feature_extractor = MNISTAutoencoderFeatureExtractor().to(device)
 
 # placeholder for linear operator (empty tensor will be replaced during iterations
 linOp = ConvolutionTranspose2D(torch.empty(0, 16, 14, 14), in_channels=16, out_channels=1,
@@ -77,7 +77,7 @@ test_loss = evaluate(net, criterion, test_loader, device=device)
 
 # save!
 filename = 'autoencoder_mnist_slimtik'
-stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler,
+stored_results = {'network': net.to('cpu'), 'optimizer': optimizer, 'scheduler': scheduler,
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
