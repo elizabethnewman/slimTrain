@@ -128,7 +128,7 @@ class SlimTikNetworkLinearOperator(nn.Module):
                 self.M.append(self.linOp)
 
                 # solve!
-                self.solve(x.to(c.device), c)
+                self.solve(x, c)
                 self.iter += 1
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist.append(self.alpha)
@@ -148,7 +148,7 @@ class SlimTikNetworkLinearOperator(nn.Module):
 
             # create right-hand side
             self.linOp.data = Z
-            res = self.linOp.A(self.W).reshape(-1, 1) - c.reshape(-1, 1)
+            res = self.linOp.A(self.W).reshape(-1, 1).to(c.device) - c.reshape(-1, 1)
             alpha = self.Lambda / self.sumLambda
             b = torch.cat((res.view(-1), alpha * self.W.view(-1)))
             b = torch.cat((torch.zeros(A.numel_out() - b.numel()), b))
