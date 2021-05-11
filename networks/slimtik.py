@@ -128,7 +128,7 @@ class SlimTikNetworkLinearOperator(nn.Module):
                 self.M.append(self.linOp)
 
                 # solve!
-                self.solve(x, c)
+                self.solve(x.to(c.device), c)
                 self.iter += 1
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist.append(self.alpha)
