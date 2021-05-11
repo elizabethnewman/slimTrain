@@ -152,10 +152,14 @@ class DenseMatrix(LinearOperator):
         self.shape_out = (data.shape[0],)
 
     def A(self, x):
-        return self.alpha * self.data @ x
+        x_device = x.device
+        x = x.to(self.device)
+        return (self.alpha * self.data @ x).to(x_device)
 
     def AT(self, x):
-        return self.alpha * self.data.t() @ x
+        x_device = x.device
+        x = x.to(self.device)
+        return (self.alpha * self.data.t() @ x).to(x_device)
 
     def numel_in(self):
         return self.shape_in[0]
@@ -178,22 +182,25 @@ class AffineOperator(LinearOperator):
 
     def A(self, x):
         # TODO: add scalar multiply?  Should we multiply bias?
+        x_device = x.device
+        x = x.to(self.device)
         n = self.shape_in[0]
 
         y = self.data @ x[:n]
         if self.bias:
             y += x[n:]
 
-        return y
+        return y.to(x_device)
 
     def AT(self, x):
-
+        x_device = x.device
+        x = x.to(self.device)
         y = self.data.t() @ x
 
         if self.bias:
             y = torch.cat((y, x))
 
-        return y
+        return y.to(x_device)
 
     def numel_in(self):
         return self.shape_in[0] + self.shape_out[0] * (self.bias is True)
