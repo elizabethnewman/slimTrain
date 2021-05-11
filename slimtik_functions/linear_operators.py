@@ -328,7 +328,7 @@ class ConvolutionTranspose2D(LinearOperator):
         self.shape_out = (out_channels, H_out, W_out)
 
     def A(self, x):
-        x_device = x.device()
+        x_device = x.device
         n = prod(self.shape_in)
         x = x.reshape(-1).to(self.device)
 
