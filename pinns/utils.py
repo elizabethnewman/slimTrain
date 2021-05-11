@@ -20,7 +20,8 @@ def set_default_arguments_lbfgs():
     parser.set_defaults(seed=20,
                         width=10, depth=10, final_time=10, no_closing_layer=False,
                         max_iter=50, line_search='strong_wolfe',
-                        max_epochs=10)
+                        max_epochs=10,
+                        dirname='results/pinns/')
 
     return parser
 
@@ -33,11 +34,9 @@ def set_filename_lbfgs(args):
 
 
 def set_default_arguments_adam():
-    parser = add_default_arguments()
+    parser = set_default_arguments_lbfgs()
 
-    parser.set_defaults(seed=20,
-                        width=10, depth=10, final_time=10, no_closing_layer=False,
-                        max_epochs=100, batch_size=100, log_interval=10,
+    parser.set_defaults(max_epochs=100, batch_size=100, log_interval=10,
                         lr=1e-2, weight_decay=1e-2,
                         step_size=500, gamma=0.5)
 
@@ -48,4 +47,19 @@ def set_filename_adam(args):
     filename = 'pinns_poisson_adam'
     details = "--width-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e" \
               % (args.width, args.depth, args.lr, args.weight_decay)
+    return filename, details
+
+
+def set_default_arguments_slimtik():
+    parser = set_default_arguments_adam()
+
+    parser.set_defaults(no_closing_layer=True)
+
+    return parser
+
+
+def set_filename_slimtik(args):
+    filename = 'pinns_poisson_slimtik'
+    details = "--width-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e--memdepth-%0.2d--optmethod--%s" \
+              % (args.width, args.depth, args.lr, args.weight_decay, args.mem_depth, args.opt_method)
     return filename, details

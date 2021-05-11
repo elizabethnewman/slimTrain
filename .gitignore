@@ -131,4 +131,4 @@ dmypy.json
 .pyre/
 /results/
 /display_saved_results_pinns.py
-/slimtik_functions/lsqr_slimtik.md
+/display_saved_results_autoencoder.py

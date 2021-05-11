@@ -77,7 +77,7 @@ def train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_test, c_
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results, total_end
+    return results, total_end - total_start
 
 
 def train_one_epoch(model, criterion, optimizer, train_data, train_labels, batch_size=10):
