@@ -27,7 +27,7 @@ val_kwargs = {'batch_size': 32}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,
-                   'shuffle': True}
+                   'shuffle': False}
     train_kwargs.update(cuda_kwargs)
     val_kwargs.update(cuda_kwargs)
 
@@ -36,14 +36,14 @@ if use_cuda:
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5)
 
 # build network
-net = MNISTAutoencoder()
+net = MNISTAutoencoder().to(device)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')
 
 # optimizer
 optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': 1e-4},
-                        {'params': net.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-3)
+                        {'params': net.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-4)
 
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=25, gamma=1)
