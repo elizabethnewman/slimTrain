@@ -92,16 +92,17 @@ if args.plot:
     plt.show()
 
     # plot solution
-    plt.figure(2)
+    plt.figure(3)
     plt.subplot(2, 2, 1)
-    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=u_true.numpy())
     plt.scatter(xb.detach().numpy(), yb.detach().numpy(), c=g.detach().numpy())
+    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=u_true.numpy())
+
     plt.colorbar()
     plt.title("utrue")
 
     plt.subplot(2, 2, 2)
-    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=u.detach().view(-1).numpy())
     plt.scatter(xb.detach().numpy(), yb.detach().numpy(), c=ub.detach().view(-1).numpy())
+    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=u.detach().view(-1).numpy())
     plt.colorbar()
     plt.title("approx")
 
@@ -109,13 +110,13 @@ if args.plot:
     plt.semilogy(results['val'][:, results['str'].index('loss')].numpy())
     plt.semilogy(results['val'][:, results['str'].index('loss_u')].numpy())
     plt.semilogy(results['val'][:, results['str'].index('loss_b')].numpy())
-    plt.legend(('objective', 'interor', 'boundary'))
+    plt.legend(('objective', 'interior', 'boundary'))
     plt.xlabel('steps')
     plt.title("convergence")
 
     plt.subplot(2, 2, 4)
-    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=torch.abs(u.detach().view(-1) - u_true.view(-1)).numpy())
     plt.scatter(xb.detach().numpy(), yb.detach().numpy(), c=torch.abs(ub.detach().view(-1) - g.view(-1)).numpy())
+    plt.scatter(x.detach().numpy(), y.detach().numpy(), c=torch.abs(u.detach().view(-1) - u_true.view(-1)).numpy())
     plt.colorbar()
     plt.title("abs. errors")
     plt.show()
