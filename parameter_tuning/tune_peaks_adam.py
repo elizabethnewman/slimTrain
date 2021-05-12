@@ -1,3 +1,4 @@
+import os
 import sys
 import shutil
 import datetime
@@ -64,6 +65,8 @@ if args.save:
                           'criterion': criterion, 'seed': args.seed, 'args': args,
                           'results': results, 'total_time': total_time,
                           'final_loss': {'train': train_loss, 'val': val_loss, 'test': test_loss}}
+        if not os.path.exists(args.dirname):
+            os.makedirs(args.dirname)
         pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
         shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
 

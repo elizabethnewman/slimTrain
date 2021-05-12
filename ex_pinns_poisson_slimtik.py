@@ -6,6 +6,7 @@ from pinns.poisson import PoissonPINNSlimTik
 from pinns.training import train_sgd
 
 # for saving
+import os
 import shutil
 import datetime
 import sys
@@ -65,6 +66,9 @@ filename = 'pinns_poisson_slimtik'
 stored_results = {'network': pinn, 'optimizer': opt,
                   'results': results, 'total_time': total_time,
                   'final_loss': {'loss_u': loss_u, 'loss_lapu': loss_lapu, 'loss_b': loss_b}}
+
+if not os.path.exists('results/'):
+    os.makedirs('results/')
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
 shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 

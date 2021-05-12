@@ -9,6 +9,7 @@ from autoencoder.mnist import MNISTAutoencoder
 from autoencoder.training import train_sgd, evaluate
 
 # for saving
+import os
 import shutil
 import datetime
 import sys
@@ -33,7 +34,8 @@ if use_cuda:
 
 
 # load data
-train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5)
+train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5,
+                                              dirname='autoencoder/')
 
 # build network
 net = MNISTAutoencoder().to(device)
@@ -62,6 +64,9 @@ filename = 'autoencoder_mnist_adam'
 stored_results = {'network': net.to('cpu'), 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
+
+if not os.path.exists('results/'):
+    os.makedirs('results/')
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
 shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 

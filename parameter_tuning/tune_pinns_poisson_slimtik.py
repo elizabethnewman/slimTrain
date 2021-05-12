@@ -1,3 +1,4 @@
+import os
 import sys
 import shutil
 import datetime
@@ -10,12 +11,12 @@ import matplotlib.pyplot as plt
 sys.path.append('..')
 from networks.resnet import ResidualNetwork
 from pinns.data import poisson2D
-from pinns.poisson import PoissonPINN
+from pinns.poisson import PoissonPINNSlimTik
 from pinns.training import train_sgd
-from pinns.utils import set_filename_adam, set_default_arguments_adam
+from pinns.utils import set_filename_slimtik, set_default_arguments_slimtik
 
 
-parser = set_default_arguments_adam()
+parser = set_default_arguments_slimtik()
 args = parser.parse_args()
 print(args)
 
@@ -34,8 +35,19 @@ data = poisson2D(d, n, nb, a, b)
 
 # build network
 feature_extractor = ResidualNetwork(in_features=d, width=args.width, depth=args.depth, final_time=args.final_time,
-                                    target_features=1, closing_layer=(not args.no_closing_layer))
-pinn = PoissonPINN(feature_extractor)
+                                    target_features=1, closing_layer=False)
+
+# W = torch.randn(1, args.width + bias=(not args.no_bias))
+# initialize using pytorch
+tmp_layer = torch.nn.Linear(args.width, 1, bias=(not args.no_bias))
+W = tmp_layer.weight.data
+b = tmp_layer.bias.data
+W = torch.cat((W, b.unsqueeze(1)), dim=1)
+
+
+pinn = PoissonPINNSlimTik(feature_extractor, W, bias=(not args.no_bias), memory_depth=args.mem_depth,
+                          lower_bound=args.lower_bound, upper_bound=args.upper_bound,
+                          opt_method=args.opt_method, reduction=args.reduction, sumLambda=args.sum_lambda)
 
 # optimization
 opt = torch.optim.Adam(feature_extractor.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -61,10 +73,12 @@ print('boundary: %0.4e' % loss_b)
 # save!
 if args.save:
     with torch.no_grad():
-        filename, details = set_filename_adam(args)
+        filename, details = set_filename_slimtik(args)
         stored_results = {'network': pinn, 'optimizer': opt.defaults, 'scheduler': scheduler.state_dict(),
                           'results': results, 'total_time': total_time,
                           'final_loss': {'loss_u': loss_u, 'loss_lapu': loss_lapu, 'loss_b': loss_b}}
+        if not os.path.exists(args.dirname):
+            os.makedirs(args.dirname)
         pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
         shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
 

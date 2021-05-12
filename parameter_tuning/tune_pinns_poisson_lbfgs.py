@@ -1,4 +1,4 @@
-# for saving
+import os
 import shutil
 import datetime
 import sys
@@ -63,6 +63,8 @@ if args.save:
         stored_results = {'network': pinn, 'optimizer': opt.defaults,
                           'results': results, 'seed': args.seed, 'args': args, 'total_time': total_time,
                           'final_loss': {'sol': sol_loss, 'boundary': boundary_loss, 'lap': lap_loss}}
+        if not os.path.exists(args.dirname):
+            os.makedirs(args.dirname)
         pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
         shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
 

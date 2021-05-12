@@ -8,6 +8,7 @@ from peaks.data import get_regression_data, visualize_regression_image
 from peaks.training import train_sgd, evaluate
 
 # for saving
+import os
 import shutil
 import datetime
 import sys
@@ -53,6 +54,9 @@ filename = 'peaks_adam'
 stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler, 'criterion': criterion,
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train': train_loss, 'val': val_loss, 'test': test_loss}}
+
+if not os.path.exists('results/'):
+    os.makedirs('results/')s
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
 shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
