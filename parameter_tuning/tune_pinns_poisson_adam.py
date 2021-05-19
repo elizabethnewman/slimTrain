@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-import datetime
+from datetime import datetime
 import pickle
 
 
@@ -62,14 +62,18 @@ print('boundary: %0.4e' % loss_b)
 # save!
 if args.save:
     with torch.no_grad():
+
         filename, details = set_filename_adam(args)
         stored_results = {'network': pinn, 'optimizer': opt.defaults, 'scheduler': scheduler.state_dict(),
                           'results': results, 'total_time': total_time,
                           'final_loss': {'loss_u': loss_u, 'loss_lapu': loss_lapu, 'loss_b': loss_b}}
         if not os.path.exists(args.dirname):
             os.makedirs(args.dirname)
-        pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
-        shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
+
+        now = datetime.now()
+        my_date = now.strftime("%m-%d-%Y--")
+        pickle.dump(stored_results, open(args.dirname + my_date + filename + details + '.pt', 'wb'))
+        shutil.copy(sys.argv[0], args.dirname + my_date + filename + details + '.py')
 
 if args.plot:
     # plot PDE
