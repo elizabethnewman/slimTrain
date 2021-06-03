@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import math
-from networks.slimtik import SlimTikNetworkLinearOperator
+from networks.slimtik import SlimTikNetworkLinearOperatorFull
 from slimtik_functions.linear_operators import ConvolutionTranspose2D
 from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
@@ -53,9 +53,9 @@ W = dec2.weight.data.reshape(-1)
 b = dec2.bias.data.reshape(-1)
 W = torch.cat((W, b))
 
-net = SlimTikNetworkLinearOperator(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                   memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                                   opt_method=None, reduction='sum', sumLambda=5e-2)
+net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
+                                       memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                                       opt_method=None, reduction='sum', sumLambda=5e-2)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')
