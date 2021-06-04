@@ -60,9 +60,10 @@ W = dec2.weight.data.reshape(-1)
 b = dec2.bias.data.reshape(-1)
 W = torch.cat((W, b))
 
+
 net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                       memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                                       opt_method='trial_points', reduction='sum', sumLambda=5e-2,
+                                       memory_depth=args.mem_depth, lower_bound=args.lower_bound, upper_bound=args.upper_bound,
+                                       opt_method=args.opt_method, reduction=args.reduction, sumLambda=args.sum_lambda,
                                        total_num_batches=args.num_train // args.batch_size)
 
 # loss
