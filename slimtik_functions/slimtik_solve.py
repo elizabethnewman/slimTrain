@@ -3,7 +3,7 @@ import math
 
 
 def solve(A, c, M, w, sumLambda, n_calTk, n_target,
-          dtype=torch.float64, opt_method=None,
+          dtype=torch.float64, device='cpu', opt_method=None,
           lower_bound=1e-7, upper_bound=1e-3, Lambda=1.0):
     """
     Solve ||S[M, Z,
@@ -12,10 +12,11 @@ def solve(A, c, M, w, sumLambda, n_calTk, n_target,
     """
 
     orig_dtype = A.dtype
+    orig_device = A.device
     _, S, V = torch.svd(M.to(dtype))
-    A = A.to(dtype)
-    c = c.to(dtype).reshape(-1, 1)
-    w = w.to(dtype).reshape(-1, 1)
+    A = A.to(dtype=dtype, device=device)
+    c = c.to(dtype=dtype, device=device).reshape(-1, 1)
+    w = w.to(dtype=dtype, device=device).reshape(-1, 1)
 
     Awc = A @ w - c
 
@@ -50,7 +51,7 @@ def solve(A, c, M, w, sumLambda, n_calTk, n_target,
     # return useful information
     info = {'sumLambda': sumLambda, 'LambdaBest': Lambda_best, 'Rnrm': (torch.norm(A @ w - c) / torch.norm(c)).item()}
 
-    return w.to(orig_dtype), info
+    return w.to(dtype=orig_dtype, device=orig_device), info
 
 
 def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.float64):
