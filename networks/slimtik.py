@@ -183,7 +183,7 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
 
     def __init__(self, feature_extractor, linOp, W, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                 opt_method='trial_points', reduction='mean', sumLambda=0.05):
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05, total_num_batches=1):
         super(SlimTikNetworkLinearOperatorFull, self).__init__()
 
         self.feature_extractor = feature_extractor
@@ -197,6 +197,7 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
         self.opt_method = opt_method
         self.reduction = reduction
         self.sumLambda = sumLambda
+        self.total_num_batches = total_num_batches
 
         self.M = []
 
@@ -223,7 +224,9 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
                 # solve!
                 self.solve(c.reshape(c.shape[0], -1))
                 self.iter += 1
-                self.alpha = self.sumLambda / (self.iter + 1)
+
+                # should we multiply by the total number of batches?
+                self.alpha = self.total_num_batches * self.sumLambda / (self.iter + 1)
                 self.alphaHist.append(self.alpha)
 
         return self.linOp.A(self.W)
