@@ -36,7 +36,7 @@ if use_cuda:
 
 
 # load data
-train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5)
+train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=32, num_val=32)
 
 # build network
 feature_extractor = MNISTAutoencoderFeatureExtractor().to(device)
@@ -55,7 +55,7 @@ W = torch.cat((W, b))
 
 net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
                                        memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                                       opt_method=None, reduction='sum', sumLambda=5e-2)
+                                       opt_method='trial_points', reduction='sum', sumLambda=5e-2)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')

@@ -71,7 +71,7 @@ class ConcatenatedLinearOperator:
         self.dtype = None
         self.device = None
         for linOp in self.linOpList:
-            if linOp.data is not None:
+            if hasattr(linOp, 'data') and hasattr(linOp, 'dtype') and hasattr(linOp, 'device'):
                 self.dtype = linOp.dtype
                 self.device = linOp.device
                 self.ndim = 1 + linOp.ndim

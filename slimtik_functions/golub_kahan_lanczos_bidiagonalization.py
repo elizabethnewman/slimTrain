@@ -81,6 +81,7 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
     # ---------------------------------------------------------------------------------------------------------------- #
     # recast
     # TODO: casting data type and device - should we cast the linear operator to a new dtype and device as well?
+    # TODO: change implementation - input linOpA and linOpM
 
     # tolerance
     eps = torch.finfo(dtype).eps
@@ -163,7 +164,7 @@ def hybrid_lsqr_gcv(linOp, b, max_iter, RegParam='gcv', x_true=None, reorth=True
                 # stop because the bidiagonal matrix is (numerically) singular
                 # No choice: we simply cannot compute the solution anymore
                 info['StopFlag'] = 'Breakdown of the Golub-Kahan bidiagonalization algorithm'
-                break
+            break
 
         # form Bk
         Bk = B[:k + 2, :k + 1]
@@ -234,6 +235,37 @@ def gcv_trial_points(alpha, u, s, beta):
     den = (1 + torch.sum(t1, dim=1)) ** 2
 
     return num / den
+
+
+def res_norm(trial_lambda, A, V, w, rhs, B, sumLambda, beta):
+    # TODO: make this efficient
+    #
+    Ub, Sb, Vb = torch.svd(B, some=True)
+    sigma_inv = 1.0 / (Sb ** 2 + sumLambda + trial_lambda)
+
+    e1 = torch.eye(Ub.shape[1])
+    y = Vb @ torch.diag(sigma_inv * Sb) @ Ub @ (beta * e1) + Q @ torch.diag(sigma_inv) @ Q.T @ (trial_lambda * V.T @ w)
+    s = V @ y
+    r = A @ w - rhs
+    return torch.norm(r - A @ s)
+
+# def res_norm(Lambda, ZU, WZC, WZCZU, WU, S, sumLambda):
+#     with torch.no_grad():
+#         sigma_inv = 1.0 / (S ** 2 + sumLambda + Lambda.view(-1, 1))
+#         m1 = WZCZU + Lambda.view(Lambda.numel(), 1, 1) * WU.unsqueeze(0)
+#         m2 = ZU.t().unsqueeze(0) * sigma_inv.view(sigma_inv.shape[0], -1, 1)
+#         res = torch.matmul(m1, m2) - WZC
+#         res_norm = torch.reshape(torch.sum(res ** 2, dim=(1, 2)), [-1, 1])
+#     return res_norm
+
+
+def trace_term(Lambda, ZU, S, sumLambda, n_target):
+    with torch.no_grad():
+        sigma_inv = 1.0 / (S ** 2 + sumLambda + torch.reshape(Lambda, [-1, 1])).t()
+        sumZU = torch.sum(ZU ** 2, dim=0).unsqueeze_(0)
+        tterm = torch.reshape(n_target * (sumZU @ sigma_inv), [-1, 1])
+
+    return tterm
 
 
 

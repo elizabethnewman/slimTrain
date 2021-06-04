@@ -1,7 +1,7 @@
 import torch
 import time
 from utils import optimizer_params, parameters_norm
-from networks.slimtik import SlimTikNetworkLinearOperator
+from networks.slimtik import SlimTikNetworkLinearOperator, SlimTikNetworkLinearOperatorFull
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
@@ -9,7 +9,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
 
     opt_params = optimizer_params(optimizer)
     net_params = {'str': (), 'frmt': '', 'val': []}
-    if isinstance(net, SlimTikNetworkLinearOperator):
+    if isinstance(net, SlimTikNetworkLinearOperator) or isinstance(net, SlimTikNetworkLinearOperatorFull):
         net_params = net.print_outs()
 
     results = {
@@ -50,7 +50,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         param_nrm = parameters_norm(net)
         opt_params = optimizer_params(optimizer)
         net_params = {'str': (), 'frmt': '', 'val': []}
-        if isinstance(net, SlimTikNetworkLinearOperator):
+        if isinstance(net, SlimTikNetworkLinearOperator) or isinstance(net, SlimTikNetworkLinearOperatorFull):
             net_params = net.print_outs()
 
         # store results
@@ -58,7 +58,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         his += opt_params['val']
         his += [end - start, param_nrm]
         his += net_params['val']
-        his +=[train_out]
+        his += [train_out]
         his += [train_eval, test_eval]
         results['val'] = torch.cat((results['val'], torch.tensor(his).reshape(1, -1)), dim=0)
 
@@ -84,7 +84,7 @@ def train_one_epoch(model, criterion, optimizer, train_loader, device='cpu'):
         num_samples += inputs.shape[0]
 
         optimizer.zero_grad()
-        if isinstance(model, SlimTikNetworkLinearOperator):
+        if isinstance(model, SlimTikNetworkLinearOperator) or isinstance(model, SlimTikNetworkLinearOperatorFull):
             output = model(inputs, inputs)
         else:
             output = model(inputs)

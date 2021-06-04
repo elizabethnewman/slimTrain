@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 import slimtik_functions.slimtik_solve_kronecker_structure as tiksolve
+import slimtik_functions.slimtik_solve as tiksolvevec
 import slimtik_functions.golub_kahan_lanczos_bidiagonalization as gkl
 import slimtik_functions.linear_operators as lop
 
@@ -220,25 +221,31 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
                 self.M.append(self.linOp)
 
                 # solve!
-                self.solve(x, c)
+                self.solve(c.reshape(c.shape[0], -1))
                 self.iter += 1
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist.append(self.alpha)
 
         return self.linOp.A(self.W)
 
-    def solve(self, Z, C, dtype=torch.float64):
+    def solve(self, C, dtype=torch.float32):
         with torch.no_grad():
-            beta = 1.0
-            if self.reduction == 'mean':
-                beta = 1 / math.sqrt(Z.shape[1])
+            n_target = C.shape[1]
 
             M = lop.ConcatenatedLinearOperator(self.M)
             M = self.get_full_matrix(M)
 
-            W, info = tiksolve.solve(beta * Z, beta * C, beta * M, self.W, self.sumLambda, Lambda=self.Lambda,
-                                     dtype=dtype, opt_method=self.opt_method,
-                                     lower_bound=self.lower_bound, upper_bound=self.upper_bound)
+            n_calTk = self.linOp.data.shape[0]
+            num_Z = self.linOp.numel_out()
+            Z = M[-num_Z:]
+            C = C.reshape(-1, 1)
+            beta = 1.0
+            if self.reduction == 'mean':
+                beta = 1 / math.sqrt(Z.shape[1])
+
+            W, info = tiksolvevec.solve(beta * Z, beta * C, beta * M, self.W, self.sumLambda, n_calTk, n_target,
+                                        Lambda=self.Lambda, dtype=dtype, opt_method=self.opt_method,
+                                        lower_bound=self.lower_bound, upper_bound=self.upper_bound)
 
         self.W = W
         self.sumLambda = info['sumLambda']
