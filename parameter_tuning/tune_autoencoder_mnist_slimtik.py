@@ -16,7 +16,7 @@ import math
 sys.path.append('..')
 from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
-from networks.slimtik import SlimTikNetworkLinearOperator
+from networks.slimtik import SlimTikNetworkLinearOperatorFull
 from slimtik_functions.linear_operators import ConvolutionTranspose2D
 from autoencoder.training import train_sgd, evaluate
 from autoencoder.utils import set_filename_slimtik, set_default_arguments_slimtik
@@ -60,10 +60,10 @@ W = dec2.weight.data.reshape(-1)
 b = dec2.bias.data.reshape(-1)
 W = torch.cat((W, b))
 
-net = SlimTikNetworkLinearOperator(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                   memory_depth=args.mem_depth,
-                                   lower_bound=args.lower_bound, upper_bound=args.upper_bound,
-                                   opt_method=args.opt_method, reduction=args.reduction, sumLambda=args.sum_lambda)
+net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
+                                       memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                                       opt_method='trial_points', reduction='sum', sumLambda=5e-2,
+                                       total_num_batches=args.num_train // args.batch_size)
 
 # loss
 criterion = nn.MSELoss(reduction=args.reduction)
