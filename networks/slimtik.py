@@ -225,8 +225,8 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
                 self.solve(c.reshape(c.shape[0], -1))
                 self.iter += 1
 
-                # should we multiply by the total number of batches?
-                self.alpha = self.total_num_batches * self.sumLambda / (self.iter + 1)
+                # should we multiply by the total number of batches? self.total_num_batches *
+                self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist.append(self.alpha)
 
         return self.linOp.A(self.W)
