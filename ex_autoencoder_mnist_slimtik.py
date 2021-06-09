@@ -43,20 +43,22 @@ train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_trai
 # build network
 feature_extractor = MNISTAutoencoderFeatureExtractor().to(device)
 
+bias = False
 # placeholder for linear operator (empty tensor will be replaced during iterations
 linOp = ConvolutionTranspose2D(torch.empty(0, 16, 14, 14), in_channels=16, out_channels=1,
-                               kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                               kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=bias)
 
 # W = torch.randn(linOp.numel_in())
 # initialize with pytorch
 dec2 = nn.ConvTranspose2d(in_channels=16, out_channels=1,
-                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=bias)
 W = dec2.weight.data.reshape(-1)
-b = dec2.bias.data.reshape(-1)
-W = torch.cat((W, b))
+if bias:
+    b = dec2.bias.data.reshape(-1)
+    W = torch.cat((W, b))
 
 net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                       memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
+                                       memory_depth=2, lower_bound=1e-7, upper_bound=1e3,
                                        opt_method='trial_points', reduction='sum', sumLambda=5e-2,
                                        total_num_batches=num_train // train_kwargs['batch_size'])
 

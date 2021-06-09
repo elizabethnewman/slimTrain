@@ -5,6 +5,7 @@ import slimtik_functions.slimtik_solve_kronecker_structure as tiksolve
 import slimtik_functions.slimtik_solve as tiksolvevec
 import slimtik_functions.golub_kahan_lanczos_bidiagonalization as gkl
 import slimtik_functions.linear_operators as lop
+from slimtik_functions.get_convolution_matrix import get_ConcatenataedConv2DTranspose_matrix, get_Conv2DTranspose_matrix
 
 
 class SlimTikNetwork(nn.Module):
@@ -236,7 +237,8 @@ class SlimTikNetworkLinearOperatorFull(nn.Module):
             n_target = C.shape[1]
 
             M = lop.ConcatenatedLinearOperator(self.M)
-            M = self.get_full_matrix(M)
+            M = get_ConcatenataedConv2DTranspose_matrix(M)
+            # M3 = self.get_full_matrix(M)
 
             n_calTk = self.linOp.data.shape[0]
             num_Z = self.linOp.numel_out()
