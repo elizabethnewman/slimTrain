@@ -52,7 +52,6 @@ linOp = ConvolutionTranspose2D(M, C_in, C_out, (kH, kW),
 A_mat = get_full_matrix(linOp)
 
 A_mat3 = get_Conv2DTranspose_matrix(linOp)
-A_mat3 = torch.cat((A_mat3, torch.ones(A_mat3.shape[0], 1)), dim=1)
 print(torch.norm(A_mat - A_mat3) / torch.norm(A_mat))
 
 print('Done!')

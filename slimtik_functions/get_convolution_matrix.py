@@ -45,6 +45,9 @@ def get_Conv2DTranspose_matrix(linOp):
     A_mat = list_squeeze(list(torch.tensor_split(A_mat, A_mat.shape[0])))
     A_mat = torch.cat(A_mat, dim=1)
 
+    # add bias
+    A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1)), dim=1)
+
     return A_mat
 
 
