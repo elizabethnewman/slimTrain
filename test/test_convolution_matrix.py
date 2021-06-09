@@ -59,7 +59,7 @@ kH = 4
 kW = 4
 
 
-bias = False
+bias = True
 stride = (2, 2)  # assume H - kH is a multiple of s1, likewise forrr W
 output_padding = (0, 0)  # must be smaller than either stride or dilation
 padding = (0, 0)  # must be smaller than kernel size
@@ -69,6 +69,7 @@ alpha = 1
 
 # initialize
 M = torch.randn(N, C_in, H, W)
+
 
 linOp = ConvolutionTranspose2D(M, C_in, C_out, (kH, kW),
                                bias=bias,
@@ -80,18 +81,19 @@ linOp = ConvolutionTranspose2D(M, C_in, C_out, (kH, kW),
                                alpha=alpha)
 
 A_mat = get_full_matrix(linOp)
-A_mat2 = get_full_matrix_v2(linOp)
+# A_mat2 = get_full_matrix_v2(linOp)
 
 # tmp = A_mat2.reshape(4, 2, 7, 5, 1, 31, 18)
 # tmp = tmp.permute(2, 5, 6, 0, 1, 3, 4)
 # tmp = tmp.reshape(-1, 40)
-tmp = A_mat2.permute(3, 2, 5, 6, 4, 0, 1)
-tmp = tmp.reshape(C_in, -1, kH * kW)
-tmp = list_squeeze(list(torch.tensor_split(tmp, tmp.shape[0])))
-tmp2 = torch.cat(tmp, dim=1)
+# tmp = A_mat2.permute(3, 2, 5, 6, 4, 0, 1)
+# tmp = tmp.reshape(C_in, -1, kH * kW)
+# tmp = list_squeeze(list(torch.tensor_split(tmp, tmp.shape[0])))
+# tmp2 = torch.cat(tmp, dim=1)
 
 A_mat3 = get_Conv2DTranspose_matrix(linOp)
-print(torch.norm(A_mat - tmp2) / torch.norm(A_mat))
+A_mat3 = torch.cat((A_mat3, torch.ones(A_mat3.shape[0], 1)), dim=1)
+# print(torch.norm(A_mat - tmp2) / torch.norm(A_mat))
 print(torch.norm(A_mat - A_mat3) / torch.norm(A_mat))
 
 print('Done!')

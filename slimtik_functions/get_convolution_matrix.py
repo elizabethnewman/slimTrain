@@ -18,7 +18,7 @@ def get_Conv2DTranspose_matrix(linOp):
 
     N = linOp.data.shape[0]
 
-    if not C_out == 1:
+    if C_out > 1:
         raise ValueError('get_Conv2DTranspose_matrix only accepts 1 output channel')
 
     d = linOp.data
@@ -30,6 +30,9 @@ def get_Conv2DTranspose_matrix(linOp):
         for j in range(kW):
             ei = torch.zeros(1, C_out, kH, kW)
             ei[:, :, i, j] = 1.0
+            ei = ei.reshape(-1)
+            ei = torch.cat((ei, torch.zeros(1)))  # because we have 1 output channel
+
             Aei = linOp.A(ei)
             A_mat[i, j] = Aei.reshape(N, C_in, C_out, linOp.shape_out[1], linOp.shape_out[2])
 
