@@ -3,7 +3,7 @@ import torch
 from slimtik_functions.linear_operators import ConcatenatedLinearOperator
 
 
-def get_ConcatenataedConv2DTranspose_matrix(linOp: ConcatenatedLinearOperator):
+def get_ConcatenatedConv2DTranspose_matrix(linOp: ConcatenatedLinearOperator):
 
     A_mat = torch.empty(0)
     for lop in linOp.linOpList:
