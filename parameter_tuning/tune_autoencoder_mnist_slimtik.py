@@ -2,7 +2,7 @@
 # for saving
 import os
 import shutil
-import datetime
+from datetime import datetime
 import sys
 import pickle
 
@@ -96,8 +96,11 @@ if args.save:
                       'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
     if not os.path.exists(args.dirname):
         os.makedirs(args.dirname)
-    pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
-    shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
+
+    now = datetime.now()
+    my_date = now.strftime("%m-%d-%Y--")
+    pickle.dump(stored_results, open(args.dirname + my_date + filename + details + '.pt', 'wb'))
+    shutil.copy(sys.argv[0], args.dirname + my_date + filename + details + '.py')
 
 # plot results
 if args.plot:

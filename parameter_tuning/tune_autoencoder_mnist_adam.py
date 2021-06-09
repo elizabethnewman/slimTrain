@@ -1,7 +1,7 @@
 import os
 import shutil
-import datetime
 import sys
+from datetime import datetime
 import pickle
 
 import torch
@@ -72,8 +72,11 @@ if args.save:
 
     if not os.path.exists(args.dirname):
         os.makedirs(args.dirname)
-    pickle.dump(stored_results, open(args.dirname + filename + details + '.pt', 'wb'))
-    shutil.copy(sys.argv[0], args.dirname + filename + details + '.py')
+
+    now = datetime.now()
+    my_date = now.strftime("%m-%d-%Y--")
+    pickle.dump(stored_results, open(args.dirname + my_date + filename + details + '.pt', 'wb'))
+    shutil.copy(sys.argv[0], args.dirname + my_date + filename + details + '.py')
 
 # plot results
 if args.plot:
