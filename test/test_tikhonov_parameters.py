@@ -1,5 +1,5 @@
 import torch
-from slimtik_functions import tikhonov_parameters as tp
+from old_code.slimtik_functions import tikhonov_parameters as tp
 
 torch.manual_seed(20)
 torch.set_default_dtype(torch.float64)

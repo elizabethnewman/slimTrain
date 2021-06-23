@@ -56,7 +56,7 @@ stored_results = {'network': net, 'optimizer': optimizer, 'scheduler': scheduler
                   'final_loss': {'train': train_loss, 'val': val_loss, 'test': test_loss}}
 
 if not os.path.exists('results/'):
-    os.makedirs('results/')s
+    os.makedirs('results/')
 pickle.dump(stored_results, open('results/' + filename + '.pt', 'wb'))
 shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 

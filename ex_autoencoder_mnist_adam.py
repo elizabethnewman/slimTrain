@@ -11,7 +11,6 @@ from autoencoder.training import train_sgd, evaluate
 # for saving
 import os
 import shutil
-import datetime
 import sys
 import pickle
 

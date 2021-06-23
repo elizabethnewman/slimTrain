@@ -2,10 +2,8 @@ import torch
 import torch.nn as nn
 import math
 import slimtik_functions.slimtik_solve_kronecker_structure as tiksolve
-import slimtik_functions.slimtik_solve as tiksolvevec
 import slimtik_functions.golub_kahan_lanczos_bidiagonalization as gkl
 import slimtik_functions.linear_operators as lop
-from slimtik_functions.get_convolution_matrix import get_ConcatenatedConv2DTranspose_matrix, get_Conv2DTranspose_matrix
 
 
 class SlimTikNetwork(nn.Module):

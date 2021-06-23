@@ -14,7 +14,7 @@ import math
 sys.path.append('..')
 from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoder
-from autoencoder.training import train_sgd, evaluate
+from old_code.autoencoder.training import train_sgd, evaluate
 from autoencoder.utils import set_filename_adam, set_default_arguments_adam
 
 parser = set_default_arguments_adam()

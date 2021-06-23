@@ -66,9 +66,9 @@ print('|Ak - kron(Zk.t(), I)| = %0.4e' % (torch.norm(torch.kron(Zk.t().contiguou
 print('|vec(Ck) - bk| = %0.4e' % (torch.norm(vec(Ck) - bk) / torch.norm(bk)).item())
 print('|vec(Rk) - res| = %0.4e' % (torch.norm(vec(Rk) - res) / torch.norm(res)).item())
 
-W_new, info = solve(Zk, Ck, M, W, sumLambda,
-              dtype=torch.float64, opt_method='none', reduction=reduction,
-              lower_bound=1e-7, upper_bound=1e-3, Lambda=Lambda)
+W_new, info = solve(beta * Zk, beta * Ck, beta * M, W, sumLambda,
+                    dtype=torch.float64, opt_method='none',
+                    lower_bound=1e-7, upper_bound=1e-3, Lambda=Lambda)
 
 # compare residuals
 print('Check results:')

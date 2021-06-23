@@ -1,6 +1,5 @@
-import torch
 from slimtik_functions.linear_operators import *
-from slimtik_functions.get_convolution_matrix import get_Conv2DTranspose_matrix
+from old_code.slimtik_functions.get_convolution_matrix import get_Conv2DTranspose_matrix
 
 # https://arxiv.org/pdf/1603.07285.pdf
 

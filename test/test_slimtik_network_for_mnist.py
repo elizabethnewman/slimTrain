@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-import matplotlib.pyplot as plt
 from autoencoder.data import mnist
-from autoencoder.training2 import train_sgd, evaluate
-from autoencoder.slimtik_network_for_mnist import SlimTikNetworkMNIST
+from autoencoder.training import train_sgd, evaluate
+from autoencoder.mnist import SlimTikNetworkMNIST, MNISTAutoencoder
 
 
 # for reproducibility
