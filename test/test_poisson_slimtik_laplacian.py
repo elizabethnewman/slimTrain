@@ -1,10 +1,8 @@
 
 import torch
-import matplotlib.pyplot as plt
 from networks.resnet import ResidualNetwork
 from pinns.data import poisson2D
 from pinns.poisson import PoissonPINNSlimTik
-from pinns.training import train_sgd
 
 
 # for reproducibility

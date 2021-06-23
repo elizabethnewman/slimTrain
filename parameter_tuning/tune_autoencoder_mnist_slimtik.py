@@ -17,7 +17,7 @@ sys.path.append('..')
 from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
 from networks.slimtik import SlimTikNetworkLinearOperatorFull
-from slimtik_functions.linear_operators import ConvolutionTranspose2D
+from old_code.slimtik_functions.linear_operators import ConvolutionTranspose2D
 from old_code.autoencoder.training import train_sgd, evaluate
 from autoencoder.utils import set_filename_slimtik, set_default_arguments_slimtik
 
