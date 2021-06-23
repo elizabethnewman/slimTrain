@@ -5,7 +5,7 @@ from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import math
 from autoencoder.data import mnist
-from autoencoder.mnist import SlimTikNetworkMNIST
+from autoencoder.mnist import MNISTAutoencoderSlimTik
 from autoencoder.training import train_sgd, evaluate
 
 # for saving
@@ -38,10 +38,10 @@ num_val = 2 ** 4
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
-net = SlimTikNetworkMNIST(memory_depth=2).to(device)
+net = MNISTAutoencoderSlimTik(memory_depth=2).to(device)
 
 # loss
-criterion = nn.MSELoss(reduction='sum')
+criterion = nn.MSELoss(reduction='mean')
 
 # optimizer
 optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-4},
@@ -52,7 +52,7 @@ scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
 # train!
 results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                num_epochs=10, log_interval=1)
+                                num_epochs=2, log_interval=1)
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
@@ -62,7 +62,6 @@ test_loss = evaluate(net, criterion, test_loader, device=device)
 # save!
 filename = 'autoencoder_mnist_slimtik'
 net.to_('cpu')
-net.linOp.data = None
 stored_results = {'network': net, 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
@@ -74,10 +73,10 @@ shutil.copy(sys.argv[0], 'results/' + filename + '.py')
 
 
 # plot results
-
+net.eval()
 with torch.no_grad():
     inputs, labels = next(iter(test_loader))
-    outputs = net(inputs).to('cpu')
+    outputs = net(inputs, inputs).to('cpu')
     inputs = inputs.to('cpu')
 
 
