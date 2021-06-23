@@ -93,6 +93,23 @@ def argument_parser():
     return parser
 
 
+def extract_parameters(net):
+    with torch.no_grad():
+        out = torch.empty(0)
+        for p in net.parameters():
+            out = torch.cat((out, p.data.reshape(-1)))
+
+    return out
+
+
+def extract_gradients(net):
+    out = torch.empty(0)
+    for p in net.parameters():
+        out = torch.cat((out, p.grad.reshape(-1)))
+
+    return out
+
+
 def parameters_norm(net):
     with torch.no_grad():
         out = None

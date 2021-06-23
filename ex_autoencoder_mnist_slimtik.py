@@ -25,8 +25,8 @@ torch.manual_seed(20)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-train_kwargs = {'batch_size': 32}
-val_kwargs = {'batch_size': 32}
+train_kwargs = {'batch_size': 8}
+val_kwargs = {'batch_size': 8}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,
@@ -36,14 +36,14 @@ if use_cuda:
 
 
 # load data
-num_train = 2 ** 10
-num_val = 2 ** 5
+num_train = 2 ** 5
+num_val = 2 ** 4
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
 feature_extractor = MNISTAutoencoderFeatureExtractor().to(device)
 
-bias = False
+bias = True
 # placeholder for linear operator (empty tensor will be replaced during iterations
 linOp = ConvolutionTranspose2D(torch.empty(0, 16, 14, 14), in_channels=16, out_channels=1,
                                kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=bias)

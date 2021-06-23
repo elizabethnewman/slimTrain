@@ -74,29 +74,28 @@ def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.fl
 
 
 def sgcv(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda, n_calTk, n_target):
-    with torch.no_grad():
-        rnorm = res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda)
-        tterm = trace_term(Lambda, AV, S, sumLambda, n_target)
-        f = rnorm / ((n_calTk - tterm) ** 2)
+    rnorm = res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda)
+    tterm = trace_term(Lambda, AV, S, sumLambda, n_target)
+    f = rnorm / ((n_calTk - tterm) ** 2)
     return f
 
 
 def res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda):
-    with torch.no_grad():
-        sigma_inv = 1.0 / (S ** 2 + sumLambda + Lambda.view(-1, 1))
-        m1 = AVTAwc.reshape(-1) + Lambda.view(Lambda.numel(), 1, 1) * VTw.reshape(-1).unsqueeze(0)
-        m2 = AV.t().unsqueeze(0) * sigma_inv.view(sigma_inv.shape[0], -1, 1)
-        tmp = torch.matmul(m1, m2)
-        res = tmp - torch.kron(Awc.reshape(1, -1), torch.ones(tmp.shape[1]).reshape(-1, 1))
-        res_norm = torch.reshape(torch.sum(res ** 2, dim=(1, 2)), [-1, 1])
-        # res_norm = torch.norm(res, dim=(1, 2)) ** 2
+    sigma_inv = 1.0 / (S ** 2 + sumLambda + Lambda.view(-1, 1))
+    m1 = AVTAwc.reshape(-1) + Lambda.view(Lambda.numel(), 1, 1) * VTw.reshape(-1).unsqueeze(0)
+    m2 = AV.t().unsqueeze(0) * sigma_inv.view(sigma_inv.shape[0], -1, 1)
+    tmp = torch.matmul(m1, m2)
+    # res = tmp - torch.kron(Awc.reshape(1, -1), torch.ones(tmp.shape[1]).reshape(-1, 1))
+    # res_norm = torch.reshape(torch.sum(res ** 2, dim=(1, 2)), [-1, 1])
+    res = tmp - Awc.reshape(1, -1)
+    res_norm = torch.norm(res, dim=(1, 2)) ** 2
+
     return res_norm.reshape(-1, 1)
 
 
 def trace_term(Lambda, AV, S, sumLambda, n_target):
-    with torch.no_grad():
-        sigma_inv = 1.0 / (S ** 2 + sumLambda + torch.reshape(Lambda, [-1, 1])).t()
-        sumAV = torch.sum(AV ** 2, dim=0).unsqueeze_(0)
-        tterm = torch.reshape(sumAV @ sigma_inv, [-1, 1])
+    sigma_inv = 1.0 / (S ** 2 + sumLambda + torch.reshape(Lambda, [-1, 1])).t()
+    sumAV = torch.sum(AV ** 2, dim=0).unsqueeze_(0)
+    tterm = torch.reshape(sumAV @ sigma_inv, [-1, 1])
 
     return tterm

@@ -23,8 +23,8 @@ torch.manual_seed(20)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-train_kwargs = {'batch_size': 32}
-val_kwargs = {'batch_size': 32}
+train_kwargs = {'batch_size': 8}
+val_kwargs = {'batch_size': 8}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,
@@ -34,7 +34,7 @@ if use_cuda:
 
 
 # load data
-train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**10, num_val=2**5,
+train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**5, num_val=2**4,
                                               dirname='autoencoder/')
 
 # build network
