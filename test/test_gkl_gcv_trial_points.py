@@ -1,5 +1,5 @@
 import torch
-from slimtik_functions import golub_kahan_lanczos_bidiagonalization as gkl
+from old_code.slimtik_functions import golub_kahan_lanczos_bidiagonalization as gkl
 from slimtik_functions.linear_operators import DenseMatrix
 
 # ==================================================================================================================== #

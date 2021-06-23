@@ -1,5 +1,5 @@
 from slimtik_functions.linear_operators import *
-from slimtik_functions import slimtik_solve_bidiagonalization as bdiagSolve
+from old_code.slimtik_functions import slimtik_solve_bidiagonalization as bdiagSolve
 import matplotlib.pyplot as plt
 
 torch.set_default_dtype(torch.float64)

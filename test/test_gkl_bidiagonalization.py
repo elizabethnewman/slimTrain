@@ -1,6 +1,5 @@
-import torch
 from slimtik_functions.linear_operators import *
-from slimtik_functions.golub_kahan_lanczos_bidiagonalization import lanczos_bidiagonalization
+from old_code.slimtik_functions.golub_kahan_lanczos_bidiagonalization import lanczos_bidiagonalization
 
 torch.set_default_dtype(torch.float64)
 
