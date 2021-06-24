@@ -15,10 +15,8 @@ import math
 
 sys.path.append('..')
 from autoencoder.data import mnist
-from autoencoder.mnist import MNISTAutoencoderFeatureExtractor
-from networks.slimtik import SlimTikNetworkLinearOperatorFull
-from old_code.slimtik_functions.linear_operators import ConvolutionTranspose2D
-from old_code.autoencoder.training import train_sgd, evaluate
+from autoencoder.mnist import MNISTAutoencoderSlimTik
+from autoencoder.training import train_sgd, evaluate
 from autoencoder.utils import set_filename_slimtik, set_default_arguments_slimtik
 
 parser = set_default_arguments_slimtik()
@@ -46,25 +44,7 @@ train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_trai
                                               dirname='../autoencoder/')
 
 # build network
-feature_extractor = MNISTAutoencoderFeatureExtractor(width=args.width, intrinsic_dim=args.intrinsic_dim).to(device)
-
-# placeholder for linear operator (empty tensor will be replaced during iterations
-linOp = ConvolutionTranspose2D(torch.empty(0, args.width, 14, 14), in_channels=args.width, out_channels=1,
-                               kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=(not args.no_bias))
-
-# W = torch.randn(linOp.numel_in())
-# initialize with pytorch
-dec2 = nn.ConvTranspose2d(in_channels=args.width, out_channels=1,
-                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=(not args.no_bias))
-W = dec2.weight.data.reshape(-1)
-b = dec2.bias.data.reshape(-1)
-W = torch.cat((W, b))
-
-
-net = SlimTikNetworkLinearOperatorFull(feature_extractor, linOp, W=W, bias=linOp.bias,
-                                       memory_depth=args.mem_depth, lower_bound=args.lower_bound, upper_bound=args.upper_bound,
-                                       opt_method=args.opt_method, reduction=args.reduction, sumLambda=args.sum_lambda,
-                                       total_num_batches=args.num_train // args.batch_size)
+net = MNISTAutoencoderSlimTik(memory_depth=2).to(device)
 
 # loss
 criterion = nn.MSELoss(reduction=args.reduction)
