@@ -97,7 +97,7 @@ def extract_parameters(net):
     with torch.no_grad():
         out = torch.empty(0)
         for p in net.parameters():
-            out = torch.cat((out, p.data.reshape(-1)))
+            out = torch.cat((out, p.data.reshape(-1).to('cpu')))
 
     return out
 
@@ -105,7 +105,7 @@ def extract_parameters(net):
 def extract_gradients(net):
     out = torch.empty(0)
     for p in net.parameters():
-        out = torch.cat((out, p.grad.reshape(-1)))
+        out = torch.cat((out, p.grad.reshape(-1).to('cpu')))
 
     return out
 
@@ -115,9 +115,9 @@ def parameters_norm(net):
         out = None
         for p in net.parameters():
             if out is None:
-                out = torch.sum(p.data ** 2)
+                out = torch.sum(p.data.to('cpu') ** 2)
             else:
-                out += torch.sum(p.data ** 2)
+                out += torch.sum(p.data.to('cpu') ** 2)
 
     return torch.sqrt(out).item()
 
@@ -129,7 +129,7 @@ def grad_norm(net: torch.nn.Module):
         if p.grad is None:
             continue
 
-        out += torch.sum(p.grad ** 2)
+        out += torch.sum(p.grad.to('cpu') ** 2)
 
     return torch.sqrt(out).item()
 
