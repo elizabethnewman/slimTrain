@@ -219,7 +219,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         N = x.shape[0]
         x = x.reshape(-1, 1, x.shape[2], x.shape[3])
 
-        A_mat = torch.zeros(kH, kW, N, C_in, C_out, shape_out[0], shape_out[1])
+        A_mat = torch.zeros(kH, kW, N, C_in, C_out, shape_out[0], shape_out[1], device=x.device)
         for i in range(kH):
             for j in range(kW):
                 ei = torch.zeros(1, C_out, kH, kW, device=x.device)
