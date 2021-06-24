@@ -234,7 +234,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         A_mat = torch.cat(A_mat, dim=1)
 
         # add bias
-        A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1)), dim=1)
+        A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1, device=x.device)), dim=1)
 
         return A_mat
 
