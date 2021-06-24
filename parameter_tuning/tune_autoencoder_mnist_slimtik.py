@@ -44,7 +44,10 @@ train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_trai
                                               dirname='../autoencoder/')
 
 # build network
-net = MNISTAutoencoderSlimTik(memory_depth=2).to(device)
+net = MNISTAutoencoderSlimTik(width=args.width, intrinsic_dim=args.intrinsic_dim, bias=args.bias,
+                              memory_depth=args.mem_depth, lower_bound=args.lower_bound, upper_bound=args.upper_bound,
+                              opt_method=args.opt_method,
+                              reduction=args.reduction, sumLambda=args.sum_lambda).to(device)
 
 # loss
 criterion = nn.MSELoss(reduction=args.reduction)
