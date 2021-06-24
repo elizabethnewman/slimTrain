@@ -88,11 +88,12 @@ class MNISTAutoencoderSlimTik(nn.Module):
     # TODO: add device mapping
     def __init__(self, width=16, intrinsic_dim=50, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                 opt_method='trial_points', reduction='mean', sumLambda=0.05):
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cpu'):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
         self.feature_extractor = MNISTAutoencoderFeatureExtractor(width=width, intrinsic_dim=intrinsic_dim)
+        self.device = device
 
         # final convolution transpose layer and parameters
         self.final_layer = dict()
@@ -117,9 +118,9 @@ class MNISTAutoencoderSlimTik(nn.Module):
         if self.final_layer['bias']:
             b = final_layer.bias.data.reshape(-1)
 
-        self.W = W
+        self.W = W.to(self.device)
         self.W_shape = W.shape
-        self.b = b
+        self.b = b.to(self.device)
 
         self.Wb_diff = torch.zeros(W.numel() + b.numel())
         self.Wb_grad = torch.zeros(W.numel() + b.numel())
@@ -151,7 +152,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         x = self.feature_extractor(x)
 
         # form full matrix
-        z = self.form_full_conv2d_transpose_matrix(x)
+        z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
 
         if self.training:
             with torch.no_grad():
@@ -169,7 +170,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
                 self.M = torch.cat((self.M, z), dim=0)
 
                 # solve for W and b
-                self.solve(z, c, n_calTk)
+                self.solve(z, c.to(self.device), n_calTk)
 
                 # update regularization parameter and iteration
                 self.iter += 1
@@ -179,7 +180,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1)) +\
                       self.Lambda * torch.cat((self.W.reshape(-1), self.b))
 
-        return F.conv_transpose2d(x, self.W, bias=self.b,
+        return F.conv_transpose2d(x, self.W.to(x.device), bias=self.b.to(x.device),
                                   stride=self.final_layer['stride'], padding=self.final_layer['padding'])
 
     def solve(self, Z, C, n_calTk, dtype=torch.float32):
@@ -221,7 +222,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         A_mat = torch.zeros(kH, kW, N, C_in, C_out, shape_out[0], shape_out[1])
         for i in range(kH):
             for j in range(kW):
-                ei = torch.zeros(1, C_out, kH, kW)
+                ei = torch.zeros(1, C_out, kH, kW, device=x.device)
                 ei[:, :, i, j] = 1.0
                 Aei = F.conv_transpose2d(x, ei, bias=None, stride=stride, padding=padding)
                 A_mat[i, j] = Aei.reshape(N, C_in, C_out, shape_out[0], shape_out[1])
