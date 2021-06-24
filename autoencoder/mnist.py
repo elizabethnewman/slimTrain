@@ -177,7 +177,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist += [self.alpha]
 
-        self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1)) +\
+        self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1).to(self.device)) +\
                       self.Lambda * torch.cat((self.W.reshape(-1), self.b))
 
         return F.conv_transpose2d(x, self.W.to(x.device), bias=self.b.to(x.device),
