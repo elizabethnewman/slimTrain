@@ -152,7 +152,9 @@ class MNISTAutoencoderSlimTik(nn.Module):
         x = self.feature_extractor(x)
 
         # form full matrix
-        z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
+        # z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
+        z = self.form_full_conv2d_transpose_matrix2(x).to(self.device)
+        # z3 = self.form_full_matrix(x).to(self.device)
 
         if self.training:
             with torch.no_grad():
@@ -177,6 +179,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist += [self.alpha]
 
+        # for printing only
         self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1).to(self.device)) +\
                       self.Lambda * torch.cat((self.W.reshape(-1), self.b))
 
@@ -206,6 +209,27 @@ class MNISTAutoencoderSlimTik(nn.Module):
     def to_(self, device='cpu'):
         self.feature_extractor = self.feature_extractor.to(device)
         self.W = self.W.to(device)
+
+    def form_full_conv2d_transpose_matrix2(self, x):
+        C_in = self.final_layer['in_channels']
+        C_out = self.final_layer['out_channels']
+        kH, kW = self.final_layer['kernel_size']
+        shape_out = self.final_layer['shape_out']
+        stride = self.final_layer['stride']
+        padding = self.final_layer['padding']
+
+        # number of samples
+        N = x.shape[0]
+        x = x.reshape(-1, 1, x.shape[2], x.shape[3])
+
+        ei = torch.eye(kH * kW).reshape(1, kH * kW, kH, kW)
+        A_mat = F.conv_transpose2d(x, ei, bias=None, stride=stride, padding=padding)
+
+        A_mat = A_mat.reshape(N, -1, ei.shape[1], shape_out[0], shape_out[1])
+        A_mat = A_mat.permute(0, 3, 4, 1, 2)
+        A_mat = A_mat.reshape(-1, (kH * kW) ** 2)
+        A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1, device=x.device)), dim=1)
+        return A_mat
 
     def form_full_conv2d_transpose_matrix(self, x):
         C_in = self.final_layer['in_channels']
@@ -238,7 +262,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         return A_mat
 
-    def get_full_matrix(self, x):
+    def form_full_matrix(self, x):
         n = math.prod(self.W_shape)
         A_mat = torch.empty(0)
         for i in range(n):
