@@ -153,11 +153,11 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         # form full matrix
         # z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
-        z = self.form_full_conv2d_transpose_matrix2(x).to(self.device)
         # z3 = self.form_full_matrix(x).to(self.device)
 
         if self.training:
             with torch.no_grad():
+                z = self.form_full_conv2d_transpose_matrix2(x).to(self.device)
                 # reset gradient of Wb
                 self.Wb_grad = torch.zeros(self.W.numel() + self.b.numel())
 
@@ -179,9 +179,9 @@ class MNISTAutoencoderSlimTik(nn.Module):
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist += [self.alpha]
 
-        # for printing only
-        self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1).to(self.device)) +\
-                      self.Lambda * torch.cat((self.W.reshape(-1), self.b))
+        # # for printing only
+        # self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1).to(self.device)) +\
+        #               self.Lambda * torch.cat((self.W.reshape(-1), self.b))
 
         return F.conv_transpose2d(x, self.W.to(x.device), bias=self.b.to(x.device),
                                   stride=self.final_layer['stride'], padding=self.final_layer['padding'])
