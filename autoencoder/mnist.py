@@ -222,7 +222,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         N = x.shape[0]
         x = x.reshape(-1, 1, x.shape[2], x.shape[3])
 
-        ei = torch.eye(kH * kW).reshape(1, kH * kW, kH, kW)
+        ei = torch.eye(kH * kW, device=x.device).reshape(1, kH * kW, kH, kW)
         A_mat = F.conv_transpose2d(x, ei, bias=None, stride=stride, padding=padding)
 
         A_mat = A_mat.reshape(N, -1, ei.shape[1], shape_out[0], shape_out[1])
