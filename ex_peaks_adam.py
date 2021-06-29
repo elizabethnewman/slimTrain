@@ -7,6 +7,12 @@ from networks.resnet import ResidualNetwork
 from peaks.data import get_regression_data, visualize_regression_image
 from peaks.training import train_sgd, evaluate
 
+import cProfile
+import profile
+
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+print(device)
+
 # for saving
 import os
 import shutil
@@ -41,7 +47,22 @@ scheduler = StepLR(optimizer, step_size=25, gamma=0.5)
 
 # train!
 results, total_time = train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_val, c_val,
-                                num_epochs=20, batch_size=10)
+                                num_epochs=2, batch_size=10)
+
+print('------ cProfile with %i channels and image size (%i, %i) ------')
+# cProfile.run('train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_val, c_val, num_epochs=2, batch_size=10)', sort='tottime')
+# profile.run('train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_val, c_val, num_epochs=2, batch_size=10)', sort='tottime')
+# with torch.profiler.profile(
+#     activities=[
+#         torch.profiler.ProfilerActivity.CPU,
+#         #torch.profiler.ProfilerActivity.CUDA,
+#     ]
+# ) as p:
+#     train_sgd(net, criterion, optimizer, scheduler, y_train, c_train, y_val, c_val, num_epochs=2, batch_size=10)
+# print(p.key_averages().table(
+#     sort_by="self_cuda_time_total", row_limit=-1))
+
+# print(prof.key_averages().table(sort_by='cuda_time_total'))
 
 # overall loss after training
 train_loss, _ = evaluate(net, criterion, y_train, c_train)

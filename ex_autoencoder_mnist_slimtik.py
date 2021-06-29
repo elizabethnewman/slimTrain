@@ -8,6 +8,10 @@ from autoencoder.data import mnist
 from autoencoder.mnist import MNISTAutoencoderSlimTik
 from autoencoder.training import train_sgd, evaluate
 
+
+import cProfile
+import profile
+
 # for saving
 import os
 import shutil
@@ -53,6 +57,8 @@ scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 # train!
 results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
                                 num_epochs=2, log_interval=1)
+
+profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
