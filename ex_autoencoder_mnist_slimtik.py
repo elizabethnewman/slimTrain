@@ -37,8 +37,8 @@ if use_cuda:
 
 
 # load data
-num_train = 2 ** 5
-num_val = 2 ** 4
+num_train = 2 ** 10
+num_val = 2 ** 5
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
