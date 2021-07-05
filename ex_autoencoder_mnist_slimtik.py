@@ -60,8 +60,8 @@ results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_load
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 print(device)
-cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
-profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
+# cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
+# profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 
 with torch.profiler.profile(
     activities=[
