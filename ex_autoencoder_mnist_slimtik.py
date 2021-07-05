@@ -63,6 +63,16 @@ print(device)
 cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU,
+        torch.profiler.ProfilerActivity.CUDA,
+    ]
+) as p:
+    train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)
+print(p.key_averages().table(
+    sort_by="self_cuda_time_total", row_limit=-1))
+
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
 val_loss = evaluate(net, criterion, val_loader, device=device)
