@@ -88,7 +88,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
     # TODO: add device mapping
     def __init__(self, width=16, intrinsic_dim=50, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cpu'):
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='gpu'):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
@@ -196,7 +196,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         W_old = torch.cat((self.W.reshape(-1), self.b.reshape(-1)))
         W, info = tiksolvevec.solve(beta * Z, beta * C, beta * self.M, deepcopy(W_old), self.sumLambda, n_calTk, n_target,
-                                    Lambda=self.Lambda, dtype=dtype, opt_method=self.opt_method,
+                                    Lambda=self.Lambda, dtype=dtype, opt_method=self.opt_method, device=self.device,
                                     lower_bound=self.lower_bound, upper_bound=self.upper_bound)
 
         self.W_diff = W.reshape(-1) - W_old.reshape(-1)
