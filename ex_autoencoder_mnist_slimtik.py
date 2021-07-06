@@ -42,7 +42,7 @@ num_val = 2 ** 5
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
-net = MNISTAutoencoderSlimTik(memory_depth=2).to(device)
+net = MNISTAutoencoderSlimTik(memory_depth=0, opt_method='none').to(device)
 
 # loss
 criterion = nn.MSELoss(reduction='mean')
@@ -54,9 +54,9 @@ optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weig
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
-# train!
-results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                num_epochs=2, log_interval=1)
+# # train!
+# results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
+#                                 num_epochs=2, log_interval=1)
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -69,7 +69,7 @@ with torch.profiler.profile(
         torch.profiler.ProfilerActivity.CUDA,
     ]
 ) as p:
-    train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)
+    train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=2, log_interval=1)
 print(p.key_averages().table(
     sort_by="self_cuda_time_total", row_limit=-1))
 
