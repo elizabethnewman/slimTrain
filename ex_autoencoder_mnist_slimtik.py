@@ -42,7 +42,7 @@ num_val = 2 ** 5
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
-net = MNISTAutoencoderSlimTik(memory_depth=0, opt_method='trial_points', device=device).to(device)
+net = MNISTAutoencoderSlimTik(memory_depth=2, opt_method='trial_points', device=device).to(device)
 
 # loss
 criterion = nn.MSELoss(reduction='mean')
