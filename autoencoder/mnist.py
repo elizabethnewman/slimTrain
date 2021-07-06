@@ -88,7 +88,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
     # TODO: add device mapping
     def __init__(self, width=16, intrinsic_dim=50, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cuda'):
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cpu'):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
