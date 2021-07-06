@@ -134,7 +134,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.sumLambda = sumLambda
 
         # store history
-        self.M = torch.empty(0)
+        self.M = torch.empty(0, device=device)
 
         # regularization parameters
         self.Lambda = self.sumLambda
