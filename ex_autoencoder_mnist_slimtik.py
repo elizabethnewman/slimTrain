@@ -80,7 +80,13 @@ test_loss = evaluate(net, criterion, test_loader, device=device)
 
 # save!
 filename = 'autoencoder_mnist_slimtik'
+
+# clear temporary variables variables
+net.clear_()
+
+# move
 net.to_('cpu')
+
 stored_results = {'network': net, 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                   'results': results, 'total_time': total_time,
                   'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}

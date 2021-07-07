@@ -73,6 +73,7 @@ test_loss = evaluate(net, criterion, test_loader, device=device)
 # save!
 if args.save:
     filename, details = set_filename_slimtik(args)
+    net.clear_()
     net.to_('cpu')
     stored_results = {'network': net, 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                       'results': results, 'total_time': total_time,
