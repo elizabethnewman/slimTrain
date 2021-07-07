@@ -85,6 +85,7 @@ filename = 'autoencoder_mnist_slimtik'
 net.clear_()
 
 # move
+net.to('cpu')
 net.to_('cpu')
 
 stored_results = {'network': net, 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
