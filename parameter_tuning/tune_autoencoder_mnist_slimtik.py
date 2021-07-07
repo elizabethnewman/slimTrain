@@ -79,7 +79,7 @@ if args.save:
     net.clear_()
     net.to('cpu')
     net.to_('cpu')
-    stored_results = {'network': net, 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
+    stored_results = {'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                       'results': results, 'total_time': total_time,
                       'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
     if not os.path.exists(args.dirname):

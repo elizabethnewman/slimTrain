@@ -158,7 +158,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
             with torch.no_grad():
                 z = self.form_full_conv2d_transpose_matrix2(x).to(self.device)
                 # reset gradient of Wb
-                self.Wb_grad = torch.zeros(self.W.numel() + self.b.numel())
+                # self.Wb_grad = torch.zeros(self.W.numel() + self.b.numel())
 
                 # get batch size
                 n_calTk = x.shape[0]
