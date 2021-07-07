@@ -199,7 +199,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
                                     Lambda=self.Lambda, dtype=dtype, opt_method=self.opt_method, device=self.device,
                                     lower_bound=self.lower_bound, upper_bound=self.upper_bound)
 
-        self.W_diff = W.reshape(-1) - W_old.reshape(-1)
+        # self.W_diff = W.reshape(-1) - W_old.reshape(-1)
         self.W = W[:-1].reshape(self.W_shape)
         self.b = W[-1]
         self.sumLambda = info['sumLambda']
@@ -209,6 +209,8 @@ class MNISTAutoencoderSlimTik(nn.Module):
     def to_(self, device='cpu'):
         self.feature_extractor = self.feature_extractor.to(device)
         self.W = self.W.to(device)
+        # self.W_diff = self.W_diff.to(device)
+
 
     def form_full_conv2d_transpose_matrix2(self, x):
         C_in = self.final_layer['in_channels']
