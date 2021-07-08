@@ -20,6 +20,9 @@ from autoencoder.utils import set_filename_adam, set_default_arguments_adam
 parser = set_default_arguments_adam()
 args = parser.parse_args()
 
+filename, details = set_filename_slimtik(args)
+print(filename + details)
+
 # for reproducibility
 torch.manual_seed(args.seed)
 
@@ -55,20 +58,31 @@ optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': args.we
 scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
 # train!
-results, total_time = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                num_epochs=args.num_epochs, log_interval=args.log_interval)
+results, total_time, opt_val_loss_net = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
+                                                  device=device, num_epochs=args.num_epochs,
+                                                  log_interval=args.log_interval)
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
 val_loss = evaluate(net, criterion, val_loader, device=device)
 test_loss = evaluate(net, criterion, test_loader, device=device)
+final_loss = {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}
+
+# optimal validation loss evaluation of network
+train_loss = evaluate(net, criterion, train_loader, device=device)
+val_loss = evaluate(net, criterion, val_loader, device=device)
+test_loss = evaluate(net, criterion, test_loader, device=device)
+opt_val_loss = {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}
 
 # save!
 if args.save:
-    filename, details = set_filename_adam(args)
-    stored_results = {'network': net.to('cpu'), 'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
+    net.to('cpu')
+    opt_val_loss_net.to('cpu')
+
+    stored_results = {'network': net, 'opt_val_loss_network': opt_val_loss_net, 'args': args,
+                      'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
                       'results': results, 'total_time': total_time,
-                      'final_loss': {'train_loss': train_loss, 'val_loss': val_loss, 'test_loss': test_loss}}
+                      'final_loss': final_loss, 'opt_val_loss': opt_val_loss}
 
     if not os.path.exists(args.dirname):
         os.makedirs(args.dirname)

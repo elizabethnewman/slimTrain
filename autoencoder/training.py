@@ -40,6 +40,10 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     train_eval = evaluate(net, criterion, train_loader, device=device)
     test_eval = evaluate(net, criterion, val_loader, device=device)
 
+    # optimal validation loss
+    opt_val_loss = test_eval
+    opt_val_loss_net = net
+
     # network weights
     old_params = extract_parameters(net).clone()
 
@@ -66,6 +70,10 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
 
         train_eval = evaluate(net, criterion, train_loader, device=device)
         test_eval = evaluate(net, criterion, val_loader, device=device)
+
+        if test_eval < opt_val_loss:
+            opt_val_loss = test_eval
+            opt_val_loss_net = net
 
         # optimization parameters
         opt_params = optimizer_params(optimizer)
@@ -101,7 +109,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results, total_end - total_start
+    return results, total_end - total_start, opt_val_loss_net
 
 
 def train_one_epoch(net, criterion, optimizer, train_loader, device='cpu'):
