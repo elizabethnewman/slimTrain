@@ -20,7 +20,7 @@ from autoencoder.utils import set_filename_adam, set_default_arguments_adam
 parser = set_default_arguments_adam()
 args = parser.parse_args()
 
-filename, details = set_filename_slimtik(args)
+filename, details = set_filename_adam(args)
 print(filename + details)
 
 # for reproducibility
