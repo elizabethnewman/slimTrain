@@ -31,7 +31,7 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 train_kwargs = {'batch_size': args.batch_size}
-val_kwargs = {'batch_size': 32}
+val_kwargs = {'batch_size': args.test_batch_size}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,

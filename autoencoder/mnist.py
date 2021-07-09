@@ -96,7 +96,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         # final convolution transpose layer and parameters
         self.final_layer = dict()
-        self.final_layer['in_channels'] = 16
+        self.final_layer['in_channels'] = width
         self.final_layer['out_channels'] = 1
         self.final_layer['kernel_size'] = (4, 4)
         self.final_layer['stride'] = (2, 2)
@@ -156,7 +156,8 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         if self.training:
             with torch.no_grad():
-                z = self.form_full_conv2d_transpose_matrix2(x).to(self.device)
+                z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
+                # z = self.form_full_matrix(x).to(self.device)
                 # reset gradient of Wb
                 # self.Wb_grad = torch.zeros(self.W.numel() + self.b.numel())
 
