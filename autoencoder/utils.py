@@ -6,6 +6,10 @@ def add_default_arguments():
     parser = argument_parser()
     parser.add_argument('--intrinsic-dim', type=int, default=50, metavar='intrinsic_dim',
                         help='intrinsic dimension of autoencoder (default: 50)')
+    parser.add_argument('--width-enc', type=int, default=16, metavar='width_enc',
+                        help='width of encoder (default: 16)')
+    parser.add_argument('--width-dec', type=int, default=16, metavar='width_dec',
+                        help='width of decoder (default: 16)')
 
     return parser
 
@@ -14,7 +18,7 @@ def set_default_arguments_adam():
     parser = add_default_arguments()
 
     parser.set_defaults(seed=20,
-                        width=16, depth=8, final_time=4,
+                        width_enc=16, width_dec=16, depth=8, final_time=4,
                         num_train=2**10, num_val=2**5,
                         reduction='sum',
                         num_epochs=100, batch_size=32, lr=1e-3, weight_decay=1e-4,

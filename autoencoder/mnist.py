@@ -18,29 +18,29 @@ class View(nn.Module):
 
 class MNISTAutoencoder(nn.Module):
 
-    def __init__(self, width=16, intrinsic_dim=50):
+    def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50):
         super(MNISTAutoencoder,self).__init__()
 
-        enc1 = nn.Conv2d(in_channels=1, out_channels=width,
+        enc1 = nn.Conv2d(in_channels=1, out_channels=width_enc,
                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
-        enc2 = nn.Conv2d(in_channels=width, out_channels=2 * width,
+        enc2 = nn.Conv2d(in_channels=width_enc, out_channels=2 * width_enc,
                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         act2 = nn.ReLU()
-        encr = View((-1, 7 * 7 * 2 * width,))
-        enc3 = nn.Linear(in_features=7 * 7 * 2 * width, out_features=intrinsic_dim, bias=True)
+        encr = View((-1, 7 * 7 * 2 * width_enc,))
+        enc3 = nn.Linear(in_features=7 * 7 * 2 * width_enc, out_features=intrinsic_dim, bias=True)
 
         self.enc = nn.Sequential(enc1, act1, enc2, act2, encr, enc3)
 
-        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width, bias=True)
-        decr = View((-1, width * 2, 7, 7))
-        decb1 = nn.BatchNorm2d(width * 2)
-        dec1 = nn.ConvTranspose2d(in_channels=2 * width, out_channels=width,
+        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width_dec, bias=True)
+        decr = View((-1, width_dec * 2, 7, 7))
+        decb1 = nn.BatchNorm2d(width_dec * 2)
+        dec1 = nn.ConvTranspose2d(in_channels=2 * width_dec, out_channels=width_dec,
                                   kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
-        decb2 = nn.BatchNorm2d(width)
-        dec2 = nn.ConvTranspose2d(in_channels=width, out_channels=1,
+        decb2 = nn.BatchNorm2d(width_dec)
+        dec2 = nn.ConvTranspose2d(in_channels=width_dec, out_channels=1,
                                   kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         self.dec = nn.Sequential(dec0, decr, decb1, dec1, act1, decb2, dec2)
@@ -53,28 +53,28 @@ class MNISTAutoencoder(nn.Module):
 
 class MNISTAutoencoderFeatureExtractor(nn.Module):
 
-    def __init__(self, width=16, intrinsic_dim=50):
+    def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50):
         super(MNISTAutoencoderFeatureExtractor,self).__init__()
 
-        enc1 = nn.Conv2d(in_channels=1, out_channels=width,
+        enc1 = nn.Conv2d(in_channels=1, out_channels=width_enc,
                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
-        enc2 = nn.Conv2d(in_channels=width, out_channels=2 * width,
+        enc2 = nn.Conv2d(in_channels=width_enc, out_channels=2 * width_enc,
                          kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         act2 = nn.ReLU()
-        encr = View((-1, 7 * 7 * 2 * width,))
-        enc3 = nn.Linear(in_features=7 * 7 * 2 * width, out_features=intrinsic_dim, bias=True)
+        encr = View((-1, 7 * 7 * 2 * width_enc,))
+        enc3 = nn.Linear(in_features=7 * 7 * 2 * width_enc, out_features=intrinsic_dim, bias=True)
 
         self.enc = nn.Sequential(enc1, act1, enc2, act2, encr, enc3)
 
-        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width, bias=True)
-        decr = View((-1, width * 2, 7, 7))
-        decb1 = nn.BatchNorm2d(width * 2)
-        dec1 = nn.ConvTranspose2d(in_channels=2 * width, out_channels=width,
+        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width_dec, bias=True)
+        decr = View((-1, width_dec * 2, 7, 7))
+        decb1 = nn.BatchNorm2d(width_dec * 2)
+        dec1 = nn.ConvTranspose2d(in_channels=2 * width_dec, out_channels=width_dec,
                                   kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
-        decb2 = nn.BatchNorm2d(width)
+        decb2 = nn.BatchNorm2d(width_dec)
 
         self.dec = nn.Sequential(dec0, decr, decb1, dec1, act1, decb2)
 
@@ -85,18 +85,19 @@ class MNISTAutoencoderFeatureExtractor(nn.Module):
 
 
 class MNISTAutoencoderSlimTik(nn.Module):
-    def __init__(self, width=16, intrinsic_dim=50, bias=True,
+    def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
                  opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cpu'):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
-        self.feature_extractor = MNISTAutoencoderFeatureExtractor(width=width, intrinsic_dim=intrinsic_dim)
+        self.feature_extractor = MNISTAutoencoderFeatureExtractor(width_enc=width_enc, width_dec=width_dec,
+                                                                  intrinsic_dim=intrinsic_dim)
         self.device = device
 
         # final convolution transpose layer and parameters
         self.final_layer = dict()
-        self.final_layer['in_channels'] = width
+        self.final_layer['in_channels'] = width_dec
         self.final_layer['out_channels'] = 1
         self.final_layer['kernel_size'] = (4, 4)
         self.final_layer['stride'] = (2, 2)

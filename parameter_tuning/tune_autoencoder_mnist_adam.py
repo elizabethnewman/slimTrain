@@ -45,7 +45,7 @@ train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_trai
                                               dirname='../autoencoder/')
 
 # build network
-net = MNISTAutoencoder(width=args.width, intrinsic_dim=args.intrinsic_dim).to(device)
+net = MNISTAutoencoder(width_enc=args.width_enc, width_dec=args.width_dec, intrinsic_dim=args.intrinsic_dim).to(device)
 
 # loss
 criterion = nn.MSELoss(reduction='sum')
