@@ -30,8 +30,8 @@ def set_default_arguments_adam():
 
 def set_filename_adam(args):
     filename = 'autoencoder_mnist_adam'
-    details = "--width-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e" \
-              % (args.width, args.depth, args.lr, args.weight_decay)
+    details = "--width-enc-%0.2d--width-dec-%0.2d--depth-%0.2d--lr-%0.2e--decay-%0.2e" \
+              % (args.width_enc, args.width_dec, args.depth, args.lr, args.weight_decay)
     return filename, details
 
 
