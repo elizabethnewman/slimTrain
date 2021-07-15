@@ -43,9 +43,11 @@ net = MNISTAutoencoder().to(device)
 criterion = nn.MSELoss()
 
 # optimizer
-optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-4},
-                        {'params': net.feature_extractor.dec_feature_extractor.parameters(), 'weight_decay': 1e-4}],
+optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-5},
+                        {'params': net.feature_extractor.dec_feature_extractor.parameters(), 'weight_decay': 1e-5},
+                        {'params': net.final_layer.parameters(), 'weight_decay': 1e-5}],
                        lr=1e-3)
+
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=25, gamma=1)
 

@@ -48,11 +48,10 @@ train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_trai
 net = MNISTAutoencoder(width_enc=args.width_enc, width_dec=args.width_dec, intrinsic_dim=args.intrinsic_dim).to(device)
 
 # loss
-criterion = nn.MSELoss(reduction='sum')
+criterion = nn.MSELoss()
 
 # optimizer
-optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': args.weight_decay},
-                        {'params': net.dec.parameters(), 'weight_decay': args.weight_decay}], lr=args.lr)
+optimizer = optim.Adam(net.parameters(), weight_decay=args.weight_decay, lr=args.lr)
 
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
