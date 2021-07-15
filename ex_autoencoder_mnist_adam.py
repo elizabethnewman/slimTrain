@@ -22,8 +22,8 @@ torch.manual_seed(20)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-train_kwargs = {'batch_size': 8}
-val_kwargs = {'batch_size': 8}
+train_kwargs = {'batch_size': 64}
+val_kwargs = {'batch_size': 64}
 if use_cuda:
     cuda_kwargs = {'num_workers': 1,
                    'pin_memory': True,
@@ -33,25 +33,25 @@ if use_cuda:
 
 
 # load data
-train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**5, num_val=2**4,
+train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=2**11, num_val=2**5,
                                               dirname='autoencoder/')
 
 # build network
 net = MNISTAutoencoder().to(device)
 
 # loss
-criterion = nn.MSELoss(reduction='sum')
+criterion = nn.MSELoss()
 
 # optimizer
-optimizer = optim.Adam([{'params': net.enc.parameters(), 'weight_decay': 1e-4},
-                        {'params': net.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-4)
-
+optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-4},
+                        {'params': net.feature_extractor.dec_feature_extractor.parameters(), 'weight_decay': 1e-4}],
+                       lr=1e-3)
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=25, gamma=1)
 
 # train!
 results, total_time, _ = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                   num_epochs=10, log_interval=1)
+                                   num_epochs=20, log_interval=1)
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
@@ -78,11 +78,12 @@ with torch.no_grad():
 
 
 plt.figure(1)
-n = inputs.shape[0]
+n = 9
 m = math.floor(math.sqrt(n))
 for i in range(m ** 2):
     plt.subplot(m, m, i + 1)
     plt.imshow(inputs[i].numpy().squeeze())
+    plt.axis('off')
     plt.colorbar()
 
 plt.title('true (test)')
@@ -93,6 +94,7 @@ plt.figure(2)
 for i in range(m ** 2):
     plt.subplot(m, m, i + 1)
     plt.imshow(outputs[i].numpy().squeeze())
+    plt.axis('off')
     plt.title('%0.2e' % ((torch.norm(outputs[i] - inputs[i]) / torch.norm(inputs[i])).item()))
     plt.colorbar()
 

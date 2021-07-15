@@ -116,7 +116,7 @@ def train_one_epoch(net, criterion, optimizer, train_loader, device='cpu'):
     net.train()
     running_loss = 0
     num_samples = 0
-    # criterion.reduction = 'sum'
+    criterion.reduction = 'mean'
 
     for i, (inputs, labels) in enumerate(train_loader, 0):
         inputs, labels = inputs.to(device), labels.to(device)
@@ -130,7 +130,7 @@ def train_one_epoch(net, criterion, optimizer, train_loader, device='cpu'):
             output = net(inputs)
 
         loss = criterion(output, inputs.to(output.device))
-        running_loss += loss.item()
+        running_loss += inputs.shape[0] * loss.item()
 
         # # average over the batch; criterion must have reduction='sum'
         # loss = loss / inputs.shape[0]

@@ -37,8 +37,8 @@ if use_cuda:
 
 
 # load data
-num_train = 2 ** 5
-num_val = 2 ** 4
+num_train = 2 ** 10
+num_val = 2 ** 5
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
@@ -48,15 +48,16 @@ net = MNISTAutoencoderSlimTik(width_dec=8, memory_depth=2, opt_method='trial_poi
 criterion = nn.MSELoss(reduction='mean')
 
 # optimizer
-optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-4},
-                        {'params': net.feature_extractor.dec.parameters(), 'weight_decay': 1e-4}], lr=1e-3)
+optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weight_decay': 1e-5},
+                        {'params': net.feature_extractor.dec_feature_extractor.parameters(), 'weight_decay': 1e-4}],
+                       lr=1e-3)
 
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
 # # train!
 results, total_time, _ = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                   num_epochs=2, log_interval=1)
+                                   num_epochs=20, log_interval=1)
 
 # cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 # profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')

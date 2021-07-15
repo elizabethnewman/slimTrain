@@ -16,71 +16,45 @@ class View(nn.Module):
         return x.view(*self.shape)
 
 
-class MNISTAutoencoder(nn.Module):
-
-    def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50):
-        super(MNISTAutoencoder,self).__init__()
-
-        enc1 = nn.Conv2d(in_channels=1, out_channels=width_enc,
-                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
-        act1 = nn.ReLU()
-        enc2 = nn.Conv2d(in_channels=width_enc, out_channels=2 * width_enc,
-                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
-
-        act2 = nn.ReLU()
-        encr = View((-1, 7 * 7 * 2 * width_enc,))
-        enc3 = nn.Linear(in_features=7 * 7 * 2 * width_enc, out_features=intrinsic_dim, bias=True)
-
-        self.enc = nn.Sequential(enc1, act1, enc2, act2, encr, enc3)
-
-        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width_dec, bias=True)
-        decr = View((-1, width_dec * 2, 7, 7))
-        decb1 = nn.BatchNorm2d(width_dec * 2)
-        dec1 = nn.ConvTranspose2d(in_channels=2 * width_dec, out_channels=width_dec,
-                                  kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
-        act1 = nn.ReLU()
-        decb2 = nn.BatchNorm2d(width_dec)
-        dec2 = nn.ConvTranspose2d(in_channels=width_dec, out_channels=1,
-                                  kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
-
-        self.dec = nn.Sequential(dec0, decr, decb1, dec1, act1, decb2, dec2)
-
-    def forward(self, x):
-        x = self.enc(x)
-        x = self.dec(x)
-        return x
-
-
 class MNISTAutoencoderFeatureExtractor(nn.Module):
 
     def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50):
         super(MNISTAutoencoderFeatureExtractor,self).__init__()
 
-        enc1 = nn.Conv2d(in_channels=1, out_channels=width_enc,
-                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+        enc1 = nn.Conv2d(1, width_enc, (4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
-        enc2 = nn.Conv2d(in_channels=width_enc, out_channels=2 * width_enc,
-                         kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+        enc2 = nn.Conv2d(width_enc, 2 * width_enc, (4, 4), stride=(2, 2), padding=(1, 1), bias=True)
 
         act2 = nn.ReLU()
         encr = View((-1, 7 * 7 * 2 * width_enc,))
-        enc3 = nn.Linear(in_features=7 * 7 * 2 * width_enc, out_features=intrinsic_dim, bias=True)
-
+        enc3 = nn.Linear(7 * 7 * 2 * width_enc, intrinsic_dim, bias=True)
         self.enc = nn.Sequential(enc1, act1, enc2, act2, encr, enc3)
 
-        dec0 = nn.Linear(in_features=intrinsic_dim, out_features=7 * 7 * 2 * width_dec, bias=True)
+        dec0 = nn.Linear(intrinsic_dim, 7 * 7 * 2 * width_dec, bias=True)
         decr = View((-1, width_dec * 2, 7, 7))
         decb1 = nn.BatchNorm2d(width_dec * 2)
-        dec1 = nn.ConvTranspose2d(in_channels=2 * width_dec, out_channels=width_dec,
-                                  kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+        dec1 = nn.ConvTranspose2d(2 * width_dec, width_dec, (4, 4), stride=(2, 2), padding=(1, 1), bias=True)
         act1 = nn.ReLU()
         decb2 = nn.BatchNorm2d(width_dec)
-
-        self.dec = nn.Sequential(dec0, decr, decb1, dec1, act1, decb2)
+        self.dec_feature_extractor = nn.Sequential(dec0, decr, decb1, dec1, act1, decb2)
 
     def forward(self, x):
         x = self.enc(x)
-        x = self.dec(x)
+        x = self.dec_feature_extractor(x)
+        return x
+
+
+class MNISTAutoencoder(nn.Module):
+
+    def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50):
+        super(MNISTAutoencoder, self).__init__()
+
+        self.feature_extractor = MNISTAutoencoderFeatureExtractor(width_enc, width_dec, intrinsic_dim)
+        self.final_layer = nn.ConvTranspose2d(width_dec, 1, (4, 4), stride=(2, 2), padding=(1, 1), bias=True)
+
+    def forward(self, x):
+        x = self.feature_extractor(x)
+        x = self.final_layer(x)
         return x
 
 
@@ -91,8 +65,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
-        self.feature_extractor = MNISTAutoencoderFeatureExtractor(width_enc=width_enc, width_dec=width_dec,
-                                                                  intrinsic_dim=intrinsic_dim)
+        self.feature_extractor = MNISTAutoencoderFeatureExtractor(width_enc, width_dec, intrinsic_dim)
         self.device = device
 
         # final convolution transpose layer and parameters
@@ -123,7 +96,6 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.b = b.to(self.device)
 
         self.Wb_diff = torch.zeros(W.numel() + b.numel())
-        self.Wb_grad = torch.zeros(W.numel() + b.numel())
 
         # slimtik parameters
         self.memory_depth = memory_depth
@@ -151,16 +123,9 @@ class MNISTAutoencoderSlimTik(nn.Module):
         # extract features
         x = self.feature_extractor(x)
 
-        # form full matrix
-        # z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
-        # z3 = self.form_full_matrix(x).to(self.device)
-
         if self.training:
             with torch.no_grad():
                 z = self.form_full_conv2d_transpose_matrix(x).to(self.device)
-                # z = self.form_full_matrix(x).to(self.device)
-                # reset gradient of Wb
-                # self.Wb_grad = torch.zeros(self.W.numel() + self.b.numel())
 
                 # get batch size
                 n_calTk = x.shape[0]
@@ -179,10 +144,6 @@ class MNISTAutoencoderSlimTik(nn.Module):
                 self.iter += 1
                 self.alpha = self.sumLambda / (self.iter + 1)
                 self.alphaHist += [self.alpha]
-
-        # # for printing only
-        # self.Wb_grad += z.t() @ (z @ torch.cat((self.W.reshape(-1), self.b)) - c.reshape(-1).to(self.device)) +\
-        #               self.Lambda * torch.cat((self.W.reshape(-1), self.b))
 
         return F.conv_transpose2d(x, self.W.to(x.device), bias=self.b.to(x.device),
                                   stride=self.final_layer['stride'], padding=self.final_layer['padding'])
@@ -205,37 +166,6 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.sumLambda = info['sumLambda']
         self.Lambda = info['LambdaBest']
         self.LambdaHist += [self.Lambda]
-
-    def to_(self, device='cpu'):
-        self.feature_extractor = self.feature_extractor.to(device)
-        self.W = self.W.to(device)
-        self.b = self.b.to(device)
-
-    def clear_(self):
-        self.M = None
-        self.Wb_diff = None
-        self.Wb_grad = None
-
-    def form_full_conv2d_transpose_matrix2(self, x):
-        C_in = self.final_layer['in_channels']
-        C_out = self.final_layer['out_channels']
-        kH, kW = self.final_layer['kernel_size']
-        shape_out = self.final_layer['shape_out']
-        stride = self.final_layer['stride']
-        padding = self.final_layer['padding']
-
-        # number of samples
-        N = x.shape[0]
-        x = x.reshape(-1, 1, x.shape[2], x.shape[3])
-
-        ei = torch.eye(kH * kW, device=x.device).reshape(1, kH * kW, kH, kW)
-        A_mat = F.conv_transpose2d(x, ei, bias=None, stride=stride, padding=padding)
-
-        A_mat = A_mat.reshape(N, -1, ei.shape[1], shape_out[0], shape_out[1])
-        A_mat = A_mat.permute(0, 3, 4, 1, 2)
-        A_mat = A_mat.reshape(-1, (kH * kW) ** 2)
-        A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1, device=x.device)), dim=1)
-        return A_mat
 
     def form_full_conv2d_transpose_matrix(self, x):
         C_in = self.final_layer['in_channels']
@@ -268,21 +198,14 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         return A_mat
 
-    def form_full_matrix(self, x):
-        n = math.prod(self.W_shape)
-        A_mat = torch.empty(0)
-        for i in range(n):
-            ei = torch.zeros(n)
-            ei[i] = 1.0
-            ei = ei.reshape(self.W_shape)
-            Aei = F.conv_transpose2d(x, ei, bias=None,
-                                     stride=self.final_layer['stride'], padding=self.final_layer['padding'])
-            A_mat = torch.cat((A_mat, Aei.view(-1, 1)), dim=1)
+    def to_(self, device='cpu'):
+        self.feature_extractor = self.feature_extractor.to(device)
+        self.W = self.W.to(device)
+        self.b = self.b.to(device)
 
-        # add bias
-        A_mat = torch.cat((A_mat, torch.ones(A_mat.shape[0], 1)), dim=1)
-
-        return A_mat
+    def clear_(self):
+        self.M = None
+        self.Wb_diff = None
 
     @staticmethod
     def list_squeeze(input):
@@ -293,10 +216,10 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
     def print_outs(self):
         results = {
-            'str': ('|W|', '|W-W_old|', '|grad_W|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
-            'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
+            'str': ('|W|', '|W-W_old|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
+            'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
             'val': [torch.norm(torch.cat((self.W.data.reshape(-1), self.b.data))).item(),
-                    torch.norm(self.Wb_diff).item(), torch.norm(self.Wb_grad).item(),
+                    torch.norm(self.Wb_diff).item(),
                     self.Lambda, self.alpha, self.iter, self.memory_depth]
         }
 
