@@ -41,7 +41,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     test_eval = evaluate(net, criterion, val_loader, device=device)
     intermediate_results = []
     if save_intermediate:
-        intermediate_results.append(store_intermediate_approx(net, train_loader))
+        intermediate_results.append(store_intermediate_approx(net, train_loader, device=device))
 
     # optimal validation loss
     opt_val_loss = test_eval
@@ -75,7 +75,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         test_eval = evaluate(net, criterion, val_loader, device=device)
 
         if save_intermediate:
-            intermediate_results.append(store_intermediate_approx(net, train_loader))
+            intermediate_results.append(store_intermediate_approx(net, train_loader, device=device))
 
         if test_eval < opt_val_loss:
             opt_val_loss = test_eval
