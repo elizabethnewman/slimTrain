@@ -164,9 +164,11 @@ def evaluate(net, criterion, data_loader, device='cpu'):
 
 def store_intermediate_approx(net, data_loader, device='cpu'):
     net.eval()
+    torch.manual_seed(20)
     with torch.no_grad():
-        inputs = data_loader.dataset.data[:32].unsqueeze(1).float()
-        labels = data_loader.dataset.targets[:32]
+        # inputs = data_loader.dataset.data[:32].unsqueeze(1).float()
+        # labels = data_loader.dataset.targets[:32]
+        inputs, labels = next(iter(data_loader))
         inputs, labels = inputs.to(device), labels.to(device)
         output = net(inputs)
         loss = torch.sum((output - inputs.to(output.device)) ** 2, dim=(1, 2, 3))
