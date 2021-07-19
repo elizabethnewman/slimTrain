@@ -5,7 +5,7 @@ from autoencoder.mnist import MNISTAutoencoderSlimTik
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
-              num_epochs=5, device='cpu', verbose=True, log_interval=1):
+              num_epochs=5, device='cpu', verbose=True, log_interval=1,  save_intermediate=False):
 
     # ---------------------------------------------------------------------------------------------------------------- #
     # setup printouts
@@ -39,6 +39,9 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     # evaluate training and testing/validation data
     train_eval = evaluate(net, criterion, train_loader, device=device)
     test_eval = evaluate(net, criterion, val_loader, device=device)
+    intermediate_results = []
+    if save_intermediate:
+        intermediate_results.append(store_intermediate_approx(net, train_loader))
 
     # optimal validation loss
     opt_val_loss = test_eval
@@ -70,6 +73,9 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
 
         train_eval = evaluate(net, criterion, train_loader, device=device)
         test_eval = evaluate(net, criterion, val_loader, device=device)
+
+        if save_intermediate:
+            intermediate_results.append(store_intermediate_approx(net, train_loader))
 
         if test_eval < opt_val_loss:
             opt_val_loss = test_eval
@@ -109,7 +115,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results, total_end - total_start, opt_val_loss_net
+    return results, total_end - total_start, opt_val_loss_net, intermediate_results
 
 
 def train_one_epoch(net, criterion, optimizer, train_loader, device='cpu'):
@@ -150,14 +156,20 @@ def evaluate(net, criterion, data_loader, device='cpu'):
         for i, (inputs, labels) in enumerate(data_loader):
             inputs, labels = inputs.to(device), labels.to(device)
             num_samples += inputs.shape[0]
-
-            if isinstance(net, MNISTAutoencoderSlimTik):
-                output = net(inputs, inputs)
-            else:
-                output = net(inputs)
-
+            output = net(inputs)
             test_loss += criterion(output, inputs.to(output.device)).item()
 
     return test_loss / num_samples
+
+
+def store_intermediate_approx(net, data_loader, device='cpu'):
+    net.eval()
+    with torch.no_grad():
+        inputs, labels = next(iter(data_loader))
+        inputs, labels = inputs.to(device), labels.to(device)
+        output = net(inputs)
+        loss = torch.sum((output - inputs.to(output.device)) ** 2, dim=(1, 2, 3))
+
+    return {'output': output.to('cpu'), 'loss': loss.to('cpu')}
 
 

@@ -37,8 +37,8 @@ if use_cuda:
 
 
 # load data
-num_train = 2 ** 10
-num_val = 2 ** 5
+num_train = 2 ** 5
+num_val = 2 ** 4
 train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
 
 # build network
@@ -56,8 +56,8 @@ optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weig
 scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 
 # # train!
-results, total_time, _ = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                   num_epochs=20, log_interval=1)
+results, total_time, _, tmp = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
+                                      num_epochs=10, log_interval=1, save_intermediate=False)
 
 # cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
 # profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')

@@ -52,8 +52,8 @@ optimizer = optim.Adam([{'params': net.feature_extractor.enc.parameters(), 'weig
 scheduler = StepLR(optimizer, step_size=25, gamma=1)
 
 # train!
-results, total_time, _ = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
-                                   num_epochs=20, log_interval=1)
+results, total_time, _, _ = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
+                                      num_epochs=20, log_interval=1)
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)
