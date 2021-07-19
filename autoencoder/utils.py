@@ -10,7 +10,7 @@ def add_default_arguments():
                         help='width of encoder (default: 16)')
     parser.add_argument('--width-dec', type=int, default=16, metavar='width_dec',
                         help='width of decoder (default: 16)')
-    parser.add_argument('--save-intermediate', action='store_true', default=False, metavar='save_intermediate',
+    parser.add_argument('--save-intermediate', action='store_true', default=False,
                         help='save intermediate training images (default: False)')
 
     return parser
