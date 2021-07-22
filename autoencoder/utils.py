@@ -12,9 +12,9 @@ def add_default_arguments():
                         help='width of decoder (default: 16)')
     parser.add_argument('--save-intermediate', action='store_true', default=False,
                         help='save intermediate training images (default: False)')
-    parser.add_argument('--alpha1', type=int, default=1e-4, metavar='alpha1',
+    parser.add_argument('--alpha1', type=float, default=1e-4, metavar='alpha1',
                         help='regularization on first block of weights default: 1e-10)')
-    parser.add_argument('--alpha2', type=int, default=1e-4, metavar='alpha2',
+    parser.add_argument('--alpha2', type=float, default=1e-4, metavar='alpha2',
                         help='regularization on final block of weights default: 1e-10)')
 
     return parser
