@@ -58,7 +58,7 @@ net = MNISTAutoencoderSlimTik(width_enc=args.width_enc, width_dec=args.width_dec
 criterion = nn.MSELoss()
 
 # optimizer
-optimizer = optim.Adam(net.parameters(), weight_decay=args.weight_decay, lr=args.lr)
+optimizer = optim.Adam(net.parameters(), weight_decay=args.alpha1, lr=args.lr)
 
 # learning rate scheduler
 scheduler = StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
