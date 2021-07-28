@@ -15,7 +15,7 @@ import math
 
 sys.path.append('..')
 from autoencoder.data import mnist
-from autoencoder.mnist import MNISTAutoencoderSlimTik
+from autoencoder.mnist2 import MNISTAutoencoderSlimTik
 from autoencoder.training import train_sgd, evaluate
 from autoencoder.utils import set_filename_slimtik, set_default_arguments_slimtik
 
