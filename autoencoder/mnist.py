@@ -157,7 +157,8 @@ class MNISTAutoencoderSlimTik(nn.Module):
             beta = 1 / math.sqrt(Z.shape[1])
 
         W_old = torch.cat((self.W.reshape(-1), self.b.reshape(-1)))
-        W, info = tiksolvevec.solve(beta * Z, beta * C, beta * self.M, deepcopy(W_old), self.sumLambda, n_calTk, n_target,
+        W, info = tiksolvevec.solve(beta * Z, beta * C, (beta * self.M).t() @ (beta * self.M), deepcopy(W_old),
+                                    self.sumLambda, n_calTk, n_target,
                                     Lambda=self.Lambda, dtype=dtype, opt_method=self.opt_method, device=self.device,
                                     lower_bound=self.lower_bound, upper_bound=self.upper_bound)
 

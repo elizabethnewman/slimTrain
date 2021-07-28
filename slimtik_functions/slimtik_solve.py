@@ -2,7 +2,7 @@ import torch
 import math
 
 
-def solve(A, c, M, w, sumLambda, n_calTk, n_target,
+def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
           dtype=torch.float64, device='cpu', opt_method=None,
           lower_bound=1e-7, upper_bound=1e-3, Lambda=1.0):
     """
@@ -11,16 +11,23 @@ def solve(A, c, M, w, sumLambda, n_calTk, n_target,
     Note that M should contain Z as well
     """
 
+    # original datatype and device
     orig_dtype = A.dtype
     orig_device = A.device
-    _, S, V = torch.svd(M.to(dtype))
+
+    # mapping to device
     A = A.to(dtype=dtype, device=device)
     c = c.to(dtype=dtype, device=device).reshape(-1, 1)
     w = w.to(dtype=dtype, device=device).reshape(-1, 1)
 
+    # initial residual
     Awc = A @ w - c
 
+    # compute svd for efficient inversion
+    _, S2, V = torch.svd(MtM.to(dtype=dtype, device=device))
+
     if opt_method == 'trial_points':
+        # pre-computed variables
         AV = A @ V
         AVTAwc = AV.t() @ Awc
         VTw = V.t() @ w
@@ -29,7 +36,7 @@ def solve(A, c, M, w, sumLambda, n_calTk, n_target,
         Lambda = choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=dtype, device=device)
 
         # approximate minimum of gcv function
-        f = sgcv(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda, n_calTk, n_target)
+        f = sgcv(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda, n_calTk, n_target)
         idx = torch.argmin(f, dim=0)
         Lambda_best = Lambda[idx].item()
     else:
@@ -42,11 +49,11 @@ def solve(A, c, M, w, sumLambda, n_calTk, n_target,
     # update sumLambda
     sumLambda += Lambda_best
 
-    # update W using Sherman-Morrison-Woodbury
-    # alpha = 1.0 / sumLambda
-    I = torch.eye(w.numel())
-    s2 = S ** 2
-    w -= (V @ torch.diag(1 / s2) @ V.t()) @ (A.t() @ Awc + Lambda_best * w)
+    # update w
+    s2 = S2 + sumLambda
+    VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
+    s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
+    w = w - s.reshape(w.shape)
 
     # return useful information
     info = {'sumLambda': sumLambda, 'LambdaBest': Lambda_best, 'Rnrm': (torch.norm(A @ w - c) / torch.norm(c)).item()}
@@ -73,15 +80,15 @@ def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.fl
     return Lambda
 
 
-def sgcv(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda, n_calTk, n_target):
-    rnorm = res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda)
-    tterm = trace_term(Lambda, AV, S, sumLambda, n_target)
+def sgcv(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda, n_calTk, n_target):
+    rnorm = res_norm(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda)
+    tterm = trace_term(Lambda, AV, S2, sumLambda, n_target)
     f = rnorm / ((n_calTk - tterm) ** 2)
     return f
 
 
-def res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda):
-    sigma_inv = 1.0 / (S ** 2 + sumLambda + Lambda.view(-1, 1))
+def res_norm(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda):
+    sigma_inv = 1.0 / (S2 + sumLambda + Lambda.view(-1, 1))
     m1 = AVTAwc.reshape(-1) + Lambda.view(Lambda.numel(), 1, 1) * VTw.reshape(-1).unsqueeze(0)
     m2 = AV.t().unsqueeze(0) * sigma_inv.view(sigma_inv.shape[0], -1, 1)
     tmp = torch.matmul(m1, m2)
@@ -93,8 +100,8 @@ def res_norm(Lambda, AV, Awc, AVTAwc, VTw, S, sumLambda):
     return res_norm.reshape(-1, 1)
 
 
-def trace_term(Lambda, AV, S, sumLambda, n_target):
-    sigma_inv = 1.0 / (S ** 2 + sumLambda + torch.reshape(Lambda, [-1, 1])).t()
+def trace_term(Lambda, AV, S2, sumLambda, n_target):
+    sigma_inv = 1.0 / (S2 + sumLambda + torch.reshape(Lambda, [-1, 1])).t()
     sumAV = torch.sum(AV ** 2, dim=0).unsqueeze_(0)
     tterm = torch.reshape(sumAV @ sigma_inv, [-1, 1])
 
