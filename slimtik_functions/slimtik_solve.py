@@ -43,8 +43,8 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
         Lambda_best = Lambda
 
     # make sure Lambda_best is feasible
-    if sumLambda + Lambda_best <= 0:
-        raise ValueError('sumLambda must be positive!')
+    if sumLambda + Lambda_best < 0:
+        raise ValueError('sumLambda must be nonnegative!')
 
     # update sumLambda
     sumLambda += Lambda_best
@@ -53,7 +53,7 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     s2 = S2 + sumLambda
     VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
     s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
-    w = w - s.reshape(w.shape)
+    w -= s.reshape(w.shape)
 
     # return useful information
     info = {'sumLambda': sumLambda, 'LambdaBest': Lambda_best, 'Rnrm': (torch.norm(A @ w - c) / torch.norm(c)).item()}
