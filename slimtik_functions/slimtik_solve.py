@@ -53,6 +53,7 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     s2 = S2 + sumLambda
     VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
     s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
+    # s = V @ torch.diag(1 / s2) @ VTrhs
     w -= s.reshape(w.shape)
 
     # return useful information
