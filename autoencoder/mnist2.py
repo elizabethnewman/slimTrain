@@ -61,7 +61,7 @@ class MNISTAutoencoder(nn.Module):
 class MNISTAutoencoderSlimTik(nn.Module):
     def __init__(self, width_enc=16, width_dec=16, intrinsic_dim=50, bias=True,
                  memory_depth=0, lower_bound=1e-7, upper_bound=1e3,
-                 opt_method='trial_points', reduction='mean', sumLambda=0.05, device='cpu'):
+                 opt_method='trial_points', reduction='mean', sumLambda=0.05, Lambda=None, device='cpu'):
         super(MNISTAutoencoderSlimTik, self).__init__()
 
         # Pytorch network
@@ -109,7 +109,11 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.ZTZ = []
 
         # regularization parameters
-        self.Lambda = self.sumLambda
+        if Lambda is None:
+            self.Lambda = self.sumLambda
+        else:
+            self.Lambda = Lambda
+
         self.LambdaHist = []
 
         self.alpha = None
@@ -154,7 +158,7 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
         beta = 1.0
         if self.reduction == 'mean':
-            beta = 1 / math.sqrt(Z.shape[1])
+            beta = 1 / math.sqrt(n_calTk)
 
         W_old = torch.cat((self.W.reshape(-1), self.b.reshape(-1)))
         W, info = tiksolvevec.solve(beta * Z, beta * C, (beta ** 2) * sum(self.ZTZ), deepcopy(W_old),
