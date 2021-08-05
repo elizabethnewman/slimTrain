@@ -46,6 +46,10 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     if sumLambda + Lambda_best < 0:
         raise ValueError('sumLambda must be nonnegative!')
 
+
+    if Lambda_best + sumLambda < lower_bound:
+        Lambda_best = -sumLambda + lower_bound
+
     # update sumLambda
     sumLambda += Lambda_best
 
@@ -63,20 +67,24 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
 
 
 def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.float64, device='cpu'):
-    eps = torch.finfo(dtype).eps
+    # eps = torch.finfo(dtype).eps
 
-    # Lambda can be as large as the upper bound
-    Lambda1 = torch.logspace(math.log10(eps), math.log10(upper_bound), 30, device=device)
+    # # Lambda can be as large as the upper bound
+    # Lambda1 = torch.logspace(math.log10(eps), math.log10(upper_bound), 30, device=device)
+    #
+    # n_low = sumLambda / 2 - lower_bound  # divide by 2 to avoid numerical issues
+    # if n_low <= 0:
+    #     # sumLambda is already less than or equal to lower_bound
+    #     # don't decrease regularization parameter
+    #     Lambda2 = torch.empty(0, device=device)
+    # else:
+    #     Lambda2 = -torch.logspace(math.log10(n_low), math.log10(eps), 30, device=device)
+    #
+    # Lambda = torch.cat((Lambda2, Lambda1), dim=0)
 
-    n_low = sumLambda / 2 - lower_bound  # divide by 2 to avoid numerical issues
-    if n_low <= 0:
-        # sumLambda is already less than or equal to lower_bound
-        # don't decrease regularization parameter
-        Lambda2 = torch.empty(0, device=device)
-    else:
-        Lambda2 = -torch.logspace(math.log10(n_low), math.log10(eps), 30, device=device)
-
-    Lambda = torch.cat((Lambda2, Lambda1), dim=0)
+    p = min(math.log10(sumLambda / 2), upper_bound)
+    Lambda = torch.logspace(min(p, -10), max(p, -10), 30).reshape(-1)
+    Lambda = torch.cat((-torch.fliplr(Lambda), Lambda))
 
     return Lambda
 
