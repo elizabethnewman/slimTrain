@@ -221,11 +221,11 @@ class MNISTAutoencoderSlimTik(nn.Module):
 
     def print_outs(self):
         results = {
-            'str': ('|W|', '|W-W_old|', 'LastLambda', 'alpha', 'iter', 'memDepth'),
-            'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}',
+            'str': ('|W|', '|W-W_old|', 'LastLambda', 'alpha', 'iter', 'memDepth', 'len(ZTZ)'),
+            'frmt': '{:<15.4e}{:<15.4e}{:<15.4e}{:<15.4e}{:<15d}{:<15d}{:<15d}',
             'val': [torch.norm(torch.cat((self.W.data.reshape(-1), self.b.data))).item(),
                     torch.norm(self.Wb_diff).item(),
-                    self.Lambda, self.alpha, self.iter, self.memory_depth]
+                    self.Lambda, self.alpha, self.iter, self.memory_depth, len(self.ZTZ)]
         }
 
         return results
