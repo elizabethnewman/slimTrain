@@ -46,7 +46,6 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     if sumLambda + Lambda_best < 0:
         raise ValueError('sumLambda must be nonnegative!')
 
-
     if Lambda_best + sumLambda < lower_bound:
         Lambda_best = -sumLambda + lower_bound
 
@@ -83,7 +82,7 @@ def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.fl
     # Lambda = torch.cat((Lambda2, Lambda1), dim=0)
 
     p = min(math.log10(sumLambda / 2), upper_bound)
-    Lambda = torch.logspace(min(p, -10), max(p, -10), 30).reshape(-1, 1)
+    Lambda = torch.logspace(min(p, -10), max(p, -10), 30, device=device, dtype=dtype).reshape(-1, 1)
     Lambda = torch.cat((-torch.fliplr(Lambda), Lambda))
 
     return Lambda.reshape(-1)
