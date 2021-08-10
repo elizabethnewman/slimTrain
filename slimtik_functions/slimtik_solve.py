@@ -69,7 +69,7 @@ def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.fl
     eps = torch.finfo(dtype).eps
 
     # Lambda can be as large as the upper bound
-    Lambda1 = torch.logspace(math.log10(eps), math.log10(upper_bound), 30, device=device)
+    Lambda1 = torch.logspace(math.log10(eps), math.log10(upper_bound), 30, device=device).reshape(-1, 1)
     Lambda = torch.cat((-torch.fliplr(Lambda1), Lambda1), dim=0)
 
     # n_low = sumLambda / 2 - lower_bound  # divide by 2 to avoid numerical issues
