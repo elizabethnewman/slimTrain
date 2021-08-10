@@ -43,8 +43,8 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
         Lambda_best = Lambda
 
     # make sure Lambda_best is feasible
-    if sumLambda + Lambda_best < 0:
-        raise ValueError('sumLambda must be nonnegative!')
+    # if sumLambda + Lambda_best < 0:
+    #     raise ValueError('sumLambda must be nonnegative!')
 
     if Lambda_best + sumLambda < lower_bound:
         Lambda_best = -sumLambda + lower_bound
