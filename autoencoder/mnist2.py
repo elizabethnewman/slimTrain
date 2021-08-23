@@ -170,6 +170,9 @@ class MNISTAutoencoderSlimTik(nn.Module):
         self.b = W[-1]
         self.sumLambda = info['sumLambda']
         self.Lambda = info['LambdaBest']
+
+        if self.Lambda < self.lower_bound or self.Lambda > self.upper_bound:
+            print('ahhh')
         self.LambdaHist += [self.Lambda]
 
     def form_full_conv2d_transpose_matrix(self, x):

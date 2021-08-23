@@ -4,7 +4,7 @@ import math
 
 def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
           dtype=torch.float64, device='cpu', opt_method=None,
-          lower_bound=1e-7, upper_bound=1e-3, Lambda=1.0):
+          lower_bound=1e-7, upper_bound=1e3, Lambda=1.0):
     """
     Solve ||S[M, Z,
 
