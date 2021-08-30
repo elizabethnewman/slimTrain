@@ -1,14 +1,13 @@
 import torch
 import matplotlib.pyplot as plt
 from networks.resnet import ResidualNetwork
-from pinns.data import poisson2D
-from pinns.poisson import PoissonPINN
-from pinns.training import train_lbfgs
+from old_code.pinns import poisson2D
+from old_code.pinns.poisson import PoissonPINN
+from old_code.pinns.training import train_lbfgs
 
 # for saving
 import os
 import shutil
-import datetime
 import sys
 import pickle
 

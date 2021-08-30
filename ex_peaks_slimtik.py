@@ -6,13 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from networks.resnet import ResidualNetwork
 from networks.slimtik import SlimTikNetwork
-from peaks.data import get_regression_data, visualize_regression_image
-from peaks.training import train_sgd, evaluate
+from old_code.peaks import get_regression_data, visualize_regression_image
+from old_code.peaks.training import train_sgd, evaluate
 
 # for saving
 import os
 import shutil
-import datetime
 import sys
 import pickle
 

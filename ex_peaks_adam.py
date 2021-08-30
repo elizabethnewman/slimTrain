@@ -4,11 +4,8 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 from networks.resnet import ResidualNetwork
-from peaks.data import get_regression_data, visualize_regression_image
-from peaks.training import train_sgd, evaluate
-
-import cProfile
-import profile
+from old_code.peaks import get_regression_data, visualize_regression_image
+from old_code.peaks.training import train_sgd, evaluate
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 print(device)
@@ -16,7 +13,6 @@ print(device)
 # for saving
 import os
 import shutil
-import datetime
 import sys
 import pickle
 
