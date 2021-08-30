@@ -5,7 +5,7 @@ from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import math
 from autoencoder.data import mnist
-from autoencoder.mnist2 import MNISTAutoencoderSlimTik
+from autoencoder.mnist_network import MNISTAutoencoderSlimTik
 from autoencoder.training import train_sgd, evaluate
 
 
@@ -58,19 +58,6 @@ scheduler = StepLR(optimizer, step_size=10, gamma=0.5)
 # # train!
 results, total_time, _, tmp = train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,
                                       num_epochs=10, log_interval=1, save_intermediate=False)
-
-# cProfile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
-# profile.run('train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device,num_epochs=2, log_interval=1)', sort='tottime')
-
-# with torch.profiler.profile(
-#     activities=[
-#         torch.profiler.ProfilerActivity.CPU,
-#         torch.profiler.ProfilerActivity.CUDA,
-#     ]
-# ) as p:
-#     train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader, device=device, num_epochs=2, log_interval=1)
-# print(p.key_averages().table(
-#     sort_by="self_cuda_time_total", row_limit=-1))
 
 # final evaluation of network
 train_loss = evaluate(net, criterion, train_loader, device=device)

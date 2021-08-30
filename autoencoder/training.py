@@ -1,7 +1,7 @@
 import torch
 import time
 from utils import optimizer_params, extract_parameters
-from autoencoder.mnist2 import MNISTAutoencoderSlimTik
+from autoencoder.mnist_network import MNISTAutoencoderSlimTik
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,

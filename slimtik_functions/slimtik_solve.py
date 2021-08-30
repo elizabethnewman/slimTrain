@@ -42,10 +42,6 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     else:
         Lambda_best = Lambda
 
-    # make sure Lambda_best is feasible
-    # if sumLambda + Lambda_best < 0:
-    #     raise ValueError('sumLambda must be nonnegative!')
-
     if Lambda_best + sumLambda < lower_bound:
         Lambda_best = -sumLambda + lower_bound
 
@@ -72,21 +68,6 @@ def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.fl
     Lambda1 = torch.logspace(math.log10(eps), math.log10(upper_bound), 30, device=device)
     Lambda2 = torch.logspace(math.log10(eps), math.log10(sumLambda), 30, device=device)
     Lambda = torch.cat((-Lambda2, Lambda1))
-
-    # n_low = sumLambda / 2 - lower_bound  # divide by 2 to avoid numerical issues
-    # if n_low <= 0:
-    #     # sumLambda is already less than or equal to lower_bound
-    #     # don't decrease regularization parameter
-    #     Lambda2 = torch.empty(0, device=device)
-    # else:
-    #     Lambda2 = -torch.logspace(math.log10(n_low), math.log10(eps), 30, device=device)
-
-    # Lambda = torch.cat((Lambda2, Lambda1), dim=0)
-
-    # p = min(math.log10(sumLambda / 2), upper_bound)
-    # Lambda = torch.logspace(min(p, -10), max(p, -10), 30, device=device, dtype=dtype).reshape(-1, 1)
-    # Lambda = torch.cat((-torch.fliplr(Lambda), Lambda))
-
     return Lambda.reshape(-1)
 
 
