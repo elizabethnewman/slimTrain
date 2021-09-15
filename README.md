@@ -1,20 +1,27 @@
-# pytorch-slimtik
+# slimTrain
+
+Sampled Limited-Memory DNN Training using Pytorch
+
+### Citation
+
+```latex
+  @article{slimTrain,
+      title={Stochastic Approximation Methods for Separable Deep Neural Networks}, 
+      author={Elizabeth Newman and Julianne Chung and Matthias Chung and Lars Ruthotto},
+      year={2021},
+  }
+```
 
 ### Installation
 ```angular2html
-git clone https://github.com/elizabethnewman/pytorch-slimtik.git
-cd pytorch-slimtik
+git clone https://github.com/elizabethnewman/slimTrain.git
+cd slimTrain
 python setup.py install
 ```
 
-### Organization
-There are three experiments implemented in this repository. Each experiment has its own data generation, 
-training algorithm, and utilities.  The pinns and autoencoder examples have their own networks as well.
+### Organiziation
 
-* **autoencoder**: This has a simple autoencoder for MNIST implemented.
-  
-* **peaks**: This is a function approximation example mapping from the coordinate plane to a single real value. 
-    It is a good toy problem to test the code and new ideas.
+* **autoencoder**: contains the autoencoder architecture, functions to load the MNIST dataset, 
 
-* **pinns**: Physics-Informed Neural Networks. This has Poisson's equation implemented.   
+
 
