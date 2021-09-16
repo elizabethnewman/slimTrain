@@ -5,7 +5,7 @@ from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import math
 from autoencoder.data import mnist
-from old_code.autoencoder.mnist import MNISTAutoencoder
+from autoencoder.mnist_network import MNISTAutoencoder
 from autoencoder.training import train_sgd, evaluate
 
 # for saving

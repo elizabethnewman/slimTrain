@@ -39,7 +39,8 @@ if use_cuda:
 # load data
 num_train = 2 ** 5
 num_val = 2 ** 4
-train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val)
+train_loader, val_loader, test_loader = mnist(train_kwargs, val_kwargs, num_train=num_train, num_val=num_val,
+                                              dirname='autoencoder/')
 
 # build network
 net = MNISTAutoencoderSlimTik(width_dec=8, memory_depth=2, opt_method='trial_points', device=device).to(device)
