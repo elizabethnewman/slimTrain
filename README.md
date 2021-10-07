@@ -27,10 +27,9 @@ This repository contains code to train a convolutional MNIST autoencoder using *
 ```angular2html
 git clone https://github.com/elizabethnewman/slimTrain.git
 cd slimTrain
+pip install -r requirements.txt
 python setup.py install
 ```
-
-The requirements are listed in *requirements.txt*, but the repository is not yet compatible with pip installation.
 
 ### Organiziation
 
