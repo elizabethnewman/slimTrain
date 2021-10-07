@@ -1,11 +1,12 @@
 import torch
 import time
-from utils import optimizer_params, extract_parameters
+from utils import optimizer_params, extract_data
 from autoencoder.mnist_network import MNISTAutoencoderSlimTik
+from copy import deepcopy
 
 
 def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
-              num_epochs=5, device='cpu', verbose=True, log_interval=1,  save_intermediate=False):
+              num_epochs=5, device='cpu', verbose=True, log_interval=1):
 
     # ---------------------------------------------------------------------------------------------------------------- #
     # setup printouts
@@ -21,8 +22,8 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
 
     # store results and printout headings/formats
     results = {
-        'str': ('epoch',) + opt_params['str'] + ('time', '|th|', '|th-th_old|', '|grad_th|') + net_params['str']
-               + ('running_loss', 'train_loss', 'val_loss'),
+        'str': (('epoch',) + opt_params['str'] + ('time', '|th|', '|th-th_old|', '|grad_th|') + net_params['str']
+                + ('running_loss', 'train_loss', 'val_loss')),
         'frmt': '{:<15d}' + opt_params['frmt'] + '{:<15.2f}{:<15.4e}{:<15.4e}{:<15.4e}' + net_params['frmt']
                 + '{:<15.4e}{:<15.4e}{:<15.4e}',
         'val': None}
@@ -39,16 +40,13 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     # evaluate training and testing/validation data
     train_eval = evaluate(net, criterion, train_loader, device=device)
     test_eval = evaluate(net, criterion, val_loader, device=device)
-    intermediate_results = []
-    if save_intermediate:
-        intermediate_results.append(store_intermediate_approx(net, train_loader, device=device))
 
     # optimal validation loss
     opt_val_loss = test_eval
-    opt_val_loss_net = net
+    opt_val_loss_net = deepcopy(net)
 
     # network weights
-    old_params = extract_parameters(net).clone()
+    old_params = extract_data(net).clone()
 
     his = len(results['str']) * [0]
     his[0] = -1
@@ -74,12 +72,9 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
         train_eval = evaluate(net, criterion, train_loader, device=device)
         test_eval = evaluate(net, criterion, val_loader, device=device)
 
-        if save_intermediate:
-            intermediate_results.append(store_intermediate_approx(net, train_loader, device=device))
-
         if test_eval < opt_val_loss:
             opt_val_loss = test_eval
-            opt_val_loss_net = net
+            opt_val_loss_net = deepcopy(net)
 
         # optimization parameters
         opt_params = optimizer_params(optimizer)
@@ -89,7 +84,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
             net_params = net.print_outs()
 
         # network weights
-        new_params = extract_parameters(net)
+        new_params = extract_data(net)
 
         # norm of network weights
         param_nrm = torch.norm(new_params).item()
@@ -115,7 +110,7 @@ def train_sgd(net, criterion, optimizer, scheduler, train_loader, val_loader,
     total_end = time.time()
     print('Total training time = ', total_end - total_start)
 
-    return results, total_end - total_start, opt_val_loss_net, intermediate_results
+    return results, total_end - total_start, opt_val_loss_net
 
 
 def train_one_epoch(net, criterion, optimizer, train_loader, device='cpu'):
@@ -162,17 +157,5 @@ def evaluate(net, criterion, data_loader, device='cpu'):
     return test_loss / num_samples
 
 
-def store_intermediate_approx(net, data_loader, device='cpu'):
-    net.eval()
-    torch.manual_seed(20)
-    with torch.no_grad():
-        # inputs = data_loader.dataset.data[:32].unsqueeze(1).float()
-        # labels = data_loader.dataset.targets[:32]
-        inputs, labels = next(iter(data_loader))
-        inputs, labels = inputs.to(device), labels.to(device)
-        output = net(inputs)
-        loss = torch.sum((output - inputs.to(output.device)) ** 2, dim=(1, 2, 3))
-
-    return {'output': output.to('cpu'), 'loss': loss.to('cpu')}
 
 

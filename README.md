@@ -9,7 +9,14 @@ A stochastic approximation strategy for training separable DNNs with automatic r
 If you use this code, please cite the following paper:
 
 ```latex
-  
+@misc{newman2021slimtrain,
+      title={slimTrain -- A Stochastic Approximation Method for Training Separable Deep Neural Networks}, 
+      author={Elizabeth Newman and Julianne Chung and Matthias Chung and Lars Ruthotto},
+      year={2021},
+      eprint={2109.14002},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
 ```
 
 ### Overview

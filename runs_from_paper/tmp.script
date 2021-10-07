@@ -1,0 +1,1 @@
+python run_autoencoder_mnist_adam.py --num-epoch 5 --batch-size 8 --num-train 100 --num-val 100 --num-test 100 --log-interval 1 --alpha1 1e-10 --alpha2 1e-1
