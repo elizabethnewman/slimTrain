@@ -145,7 +145,7 @@ def module_setattr(obj, names, val):
         return module_setattr(getattr(obj, names[0]), names[1:], val)
 
 
-def extract_data(net, attr: str = 'data'):
+def extract_data(net, attr: str='data'):
     theta = torch.empty(0)
     for name, w in net.named_parameters():
         if getattr(w, attr) is None:
@@ -153,7 +153,7 @@ def extract_data(net, attr: str = 'data'):
         else:
             w = getattr(w, attr)
 
-        theta = torch.cat((theta, w.reshape(-1)))
+        theta = torch.cat((theta.to(w.device), w.reshape(-1)))
 
     return theta
 
