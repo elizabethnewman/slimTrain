@@ -31,6 +31,11 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
+To run the scripts from the paper, use the .sh shells.  You may need to change permissions via
+```angular2html
+chmod +x script_name
+```
+
 ### Organiziation
 
 * **autoencoder**: contains the autoencoder architecture, functions to load the MNIST dataset, and the MNIST autoencoder network used.
