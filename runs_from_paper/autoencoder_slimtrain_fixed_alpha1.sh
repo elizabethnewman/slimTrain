@@ -1,13 +1,13 @@
 #!/bin/sh
 export PYTHONPATH=".."
 
-num_epochs=5
+num_epochs=50
 alpha1=1e-10
-num_train=100
-num_val=100
-num_test=100
-log_interval=1
-batch_size=8
+num_train=50000
+num_val=10000
+num_test=10000
+log_interval=10
+batch_size=32
 mem_depth=5
 seed=20
 
