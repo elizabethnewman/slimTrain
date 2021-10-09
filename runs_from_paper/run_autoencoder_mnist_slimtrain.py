@@ -95,7 +95,7 @@ if args.save:
     stored_results = {'network': net, 'opt_val_loss_network': opt_val_loss_net,
                       'final_loss': final_loss, 'opt_val_loss': opt_val_loss,
                       'optimizer': optimizer.defaults, 'scheduler': scheduler.state_dict(),
-                      'results': results, 'total_time': total_time}
+                      'results': results, 'total_time': total_time, 'args': args}
 
     if not os.path.exists(args.dirname):
         os.makedirs(args.dirname)
