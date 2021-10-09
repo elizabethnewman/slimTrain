@@ -40,7 +40,8 @@ def set_filename_adam(args):
 
 def set_default_arguments_slimtrain():
     parser = set_default_arguments_adam()
-    parser.set_defaults(mem_depth=0, sum_lambda=5e-2, opt_method='trial_points')
+    parser.set_defaults(mem_depth=0, sum_lambda=5e-2, opt_method='trial_points',
+                        lower_bound=1e-7, upper_bound=1e1)
     return parser
 
 
