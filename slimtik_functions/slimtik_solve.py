@@ -24,7 +24,7 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     Awc = A @ w - c
 
     # compute svd for efficient inversion (shifted for numerical stability)
-    MtM = MtM.to(dtype=torch.float32, device='cpu')
+    MtM = MtM.to(dtype=torch.double, device='cpu')
     _, S2, V = torch.svd(MtM)
     S2 = S2.to(dtype=A.dtype, device=A.device)
     V = V.to(dtype=A.dtype, device=A.device)
