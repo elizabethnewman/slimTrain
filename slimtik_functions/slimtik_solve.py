@@ -25,7 +25,7 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
 
     # compute svd for efficient inversion (shifted for numerical stability)
     MtM = MtM.to(dtype=torch.double, device='cpu')
-    _, S2, V = torch.svd(MtM)
+    _, S2, V = torch.linalg.svd(MtM, full_matrices=False)
     S2 = S2.to(dtype=A.dtype, device=A.device)
     V = V.to(dtype=A.dtype, device=A.device)
 
