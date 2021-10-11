@@ -23,11 +23,11 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     # initial residual
     Awc = A @ w - c
 
-    # compute svd for efficient inversion (shifted for numerical stability)
+    # compute svd for efficient inversion
     MtM = MtM.to(dtype=torch.double, device='cpu')
-    _, S2, V = torch.linalg.svd(MtM, full_matrices=False)
+    _, S2, V = torch.linalg.svd(MtM)
     S2 = S2.to(dtype=A.dtype, device=A.device)
-    V = V.to(dtype=A.dtype, device=A.device)
+    V = V.t().to(dtype=A.dtype, device=A.device)
 
     if opt_method == 'trial_points':
         # pre-computed variables
