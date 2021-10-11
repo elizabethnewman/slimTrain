@@ -24,9 +24,9 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     Awc = A @ w - c
 
     # compute svd for efficient inversion (shifted for numerical stability)
-    I = torch.eye(MtM.shape[0], dtype=MtM.dtype, device=MtM.device)
-    _, S2, V = torch.svd((MtM + I).to(dtype=dtype, device=device))
-    S2 = S2 - 1.0
+    _, S2, V = torch.svd(MtM.to(dtype=torch.float32, device='cpu'))
+    S2 = S2.to(dtype=A.dtype, device=A.device)
+    V = V.to(dtype=A.dtype, device=A.device)
 
     if opt_method == 'trial_points':
         # pre-computed variables
