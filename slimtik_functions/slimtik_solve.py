@@ -23,10 +23,10 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     Awc = A @ w - c
 
     # compute svd for efficient inversion
-    MtM = MtM.to(dtype=torch.double, device='cpu')
+    # MtM = MtM.to(dtype=torch.double, device='cpu')
     _, S2, V = torch.svd(MtM)
-    S2 = S2.to(dtype=A.dtype, device=A.device)
-    V = V.to(dtype=A.dtype, device=A.device)
+    # S2 = S2.to(dtype=A.dtype, device=A.device)
+    # V = V.to(dtype=A.dtype, device=A.device)
 
     if opt_method == 'trial_points':
         # pre-computed variables
@@ -50,13 +50,8 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
     # update sumLambda
     sumLambda += Lambda_best
 
-    s2 = S2 + sumLambda
-
-    # check for small values
-    s2 = torch.max(s2, torch.tensor(1e-7))
-
     # update w
-    # s2 = S2 + sumLambda
+    s2 = S2 + sumLambda
     VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
     s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
     # s = V @ torch.diag(1 / s2) @ VTrhs
