@@ -10,58 +10,62 @@ def solve(A, c, MtM, w, sumLambda, n_calTk, n_target,
 
     Note that M should contain Z as well
     """
-    with torch.no_grad():
-        # original datatype and device
-        orig_dtype = A.dtype
-        orig_device = A.device
+    # original datatype and device
+    orig_dtype = A.dtype
+    orig_device = A.device
 
-        # mapping to device
-        A = A.to(dtype=dtype, device=device)
-        c = c.to(dtype=dtype, device=device).reshape(-1, 1)
-        w = w.to(dtype=dtype, device=device).reshape(-1, 1)
+    # mapping to device
+    A = A.to(dtype=dtype, device=device)
+    c = c.to(dtype=dtype, device=device).reshape(-1, 1)
+    w = w.to(dtype=dtype, device=device).reshape(-1, 1)
 
-        # initial residual
-        Awc = A @ w - c
+    # initial residual
+    Awc = A @ w - c
 
-        # compute svd for efficient inversion
-        MtM = MtM.to(dtype=torch.double, device='cpu')
-        _, S2, V = torch.linalg.svd(MtM)
-        S2 = S2.to(dtype=A.dtype, device=A.device)
-        V = V.t().to(dtype=A.dtype, device=A.device)
+    # compute svd for efficient inversion
+    MtM = MtM.to(dtype=torch.double, device='cpu')
+    _, S2, V = torch.svd(MtM)
+    S2 = S2.to(dtype=A.dtype, device=A.device)
+    V = V.to(dtype=A.dtype, device=A.device)
 
-        if opt_method == 'trial_points':
-            # pre-computed variables
-            AV = A @ V
-            AVTAwc = AV.t() @ Awc
-            VTw = V.t() @ w
+    if opt_method == 'trial_points':
+        # pre-computed variables
+        AV = A @ V
+        AVTAwc = AV.t() @ Awc
+        VTw = V.t() @ w
 
-            # choose candidates
-            Lambda = choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=dtype, device=device)
+        # choose candidates
+        Lambda = choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=dtype, device=device)
 
-            # approximate minimum of gcv function
-            f = sgcv(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda, n_calTk, n_target)
-            idx = torch.argmin(f, dim=0)
-            Lambda_best = Lambda[idx].item()
-        else:
-            Lambda_best = Lambda
+        # approximate minimum of gcv function
+        f = sgcv(Lambda, AV, Awc, AVTAwc, VTw, S2, sumLambda, n_calTk, n_target)
+        idx = torch.argmin(f, dim=0)
+        Lambda_best = Lambda[idx].item()
+    else:
+        Lambda_best = Lambda
 
-        if Lambda_best + sumLambda < lower_bound:
-            Lambda_best = -sumLambda + lower_bound
+    if Lambda_best + sumLambda < lower_bound:
+        Lambda_best = -sumLambda + lower_bound
 
-        # update sumLambda
-        sumLambda += Lambda_best
+    # update sumLambda
+    sumLambda += Lambda_best
 
-        # update w
-        s2 = S2 + sumLambda
-        VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
-        s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
-        # s = V @ torch.diag(1 / s2) @ VTrhs
-        w -= s.reshape(w.shape)
+    s2 = S2 + sumLambda
 
-        # return useful information
-        info = {'sumLambda': sumLambda, 'LambdaBest': Lambda_best, 'Rnrm': (torch.norm(A @ w - c) / torch.norm(c)).item()}
+    # check for small values
+    s2 = torch.max(s2, torch.tensor(1e-7))
 
-        return w.to(dtype=orig_dtype, device=orig_device), info
+    # update w
+    # s2 = S2 + sumLambda
+    VTrhs = V.t() @ (A.t() @ Awc + Lambda_best * w)
+    s = V @ (VTrhs.reshape(-1) / s2.reshape(-1))
+    # s = V @ torch.diag(1 / s2) @ VTrhs
+    w -= s.reshape(w.shape)
+
+    # return useful information
+    info = {'sumLambda': sumLambda, 'LambdaBest': Lambda_best, 'Rnrm': (torch.norm(A @ w - c) / torch.norm(c)).item()}
+
+    return w.to(dtype=orig_dtype, device=orig_device), info
 
 
 def choose_Lambda_candidates(sumLambda, upper_bound, lower_bound, dtype=torch.float64, device='cpu'):
